@@ -762,7 +762,7 @@ async function ocrAPI(img){
   const b64=img.split(',')[1];
   let r;
   try{
-    r=await fetch('https://api.anthropic.com/v1/messages',{
+    r=await fetch('https://red-resonance-d4ba.bnbcasamoresca.workers.dev',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
         messages:[{role:'user',content:[
@@ -836,7 +836,7 @@ async function send(){
   showLdr('Invio dati in corso…');
   const b=ci.bk,n=nights(b.arrivo,b.partenza),txt=buildTxt(n);
   try{
-    await fetch('https://api.anthropic.com/v1/messages',{
+    await fetch('https://red-resonance-d4ba.bnbcasamoresca.workers.dev',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:100,
         messages:[{role:'user',content:`Conferma ricevuta check-in "${b.nome}" per Octorate. 2 righe in italiano.`}]})
