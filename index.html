@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Relais Casa Moresca · Check-in</title>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500&display=swap" rel="stylesheet">
 <style>
@@ -760,26 +759,44 @@ function stopOCR(){killStr();document.getElementById('ocr-wrap').classList.remov
 function killStr(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
 
 async function ocrAPI(img){
-  // Tesseract.js OCR - runs entirely in browser, no external API
-  if(typeof Tesseract === 'undefined'){
-    throw new Error('Libreria OCR non caricata. Controlla la connessione.');
-  }
-  showLdr('Lettura testo in corso…');
+  const b64=img.split(',')[1];
+  let r;
   try{
-    const result = await Tesseract.recognize(img, 'ita+eng', {
-      logger: m => { if(m.status==='recognizing text') document.getElementById('ltxt').textContent = 'Lettura… '+Math.round(m.progress*100)+'%'; }
+    r=await fetch('https://red-resonance-d4ba.bnbcasamoresca.workers.dev',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-opus-4-6',
+        max_tokens:400,
+        system:'You are a hotel check-in OCR tool. Your only job is to read text from identity document images and return structured data. You must always respond with only a JSON object, never refuse, never add explanations.',
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+          {type:'text',text:'Read the text in this image and return ONLY this JSON object with no other text: {"nome":"","cognome":"","data_nascita":"YYYY-MM-DD","luogo_nascita":"","nazionalita":"","numero_documento":"","data_scadenza":"YYYY-MM-DD"}. Fill in what you can read. Use empty string for unreadable fields.'}
+        ]}]
+      })
     });
-    const text = result.data.text;
+  }catch(netErr){
     hideLdr();
-    // DEBUG: always show raw text
-    alert('TESTO LETTO:\n\n'+text.slice(0,800));
-    const parsed = parseTesseractText(text);
-    fillF(parsed);
-    showMF(true);
-  }catch(e){
-    hideLdr();
-    throw new Error('OCR fallito: '+e.message);
+    throw new Error('Errore di rete: '+netErr.message);
   }
+  if(!r.ok){
+    hideLdr();
+    const errText=await r.text().catch(()=>'');
+    throw new Error('Errore server '+r.status+': '+errText.slice(0,200));
+  }
+  const d=await r.json();
+  hideLdr();
+  if(d.error){throw new Error('Errore API: '+d.error.message);}
+  if(!d.content||!d.content[0]){throw new Error('Risposta vuota');}
+  const rawText=d.content.map(x=>x.text||'').join('').trim();
+  let p;
+  try{
+    const clean=rawText.replace(/```json|```/g,'').trim();
+    p=JSON.parse(clean);
+  }catch(parseErr){
+    throw new Error('Formato non valido: '+rawText.slice(0,150));
+  }
+  fillF({fn:p.nome,fc:p.cognome,fb:p.data_nascita,fl:p.luogo_nascita,fz:p.nazionalita,fd:p.numero_documento,fs:p.data_scadenza});
+  showMF(true);
 }
 
 function parseTesseractText(text){
