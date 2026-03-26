@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Relais Casa Moresca · Check-in</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500&display=swap" rel="stylesheet">
 <style>
@@ -759,41 +760,70 @@ function stopOCR(){killStr();document.getElementById('ocr-wrap').classList.remov
 function killStr(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
 
 async function ocrAPI(img){
-  const b64=img.split(',')[1];
-  let r;
+  // Tesseract.js OCR - runs entirely in browser, no external API
+  if(typeof Tesseract === 'undefined'){
+    throw new Error('Libreria OCR non caricata. Controlla la connessione.');
+  }
+  showLdr('Lettura testo in corso…');
   try{
-    r=await fetch('https://red-resonance-d4ba.bnbcasamoresca.workers.dev',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:600,
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-          {type:'text',text:'Transcribe the printed text from this image into a JSON object with these keys: nome, cognome, data_nascita (YYYY-MM-DD), luogo_nascita, nazionalita, numero_documento, data_scadenza (YYYY-MM-DD). Output only the JSON object, nothing else. Use empty string for text you cannot read.'}
-        ]}]})
+    const result = await Tesseract.recognize(img, 'ita+eng', {
+      logger: m => { if(m.status==='recognizing text') document.getElementById('ltxt').textContent = 'Lettura… '+Math.round(m.progress*100)+'%'; }
     });
-  }catch(netErr){
+    const text = result.data.text;
     hideLdr();
-    throw new Error('Errore di rete: '+netErr.message);
-  }
-  if(!r.ok){
+    // Parse MRZ or free text to extract fields
+    const parsed = parseTesseractText(text);
+    fillF(parsed);
+    showMF(true);
+  }catch(e){
     hideLdr();
-    const errText=await r.text().catch(()=>'');
-    throw new Error('Server error '+r.status+': '+errText.slice(0,200));
+    throw new Error('OCR fallito: '+e.message);
   }
-  const d=await r.json();
-  hideLdr();
-  if(d.error){throw new Error('API error: '+d.error.message);}
-  if(!d.content||!d.content[0]){throw new Error('Risposta vuota dall API');}
-  const rawText=d.content.map(x=>x.text||'').join('').trim();
-  let p;
-  try{
-    // Strip possible markdown code fences
-    const clean=rawText.replace(/```json|```/g,'').trim();
-    p=JSON.parse(clean);
-  }catch(parseErr){
-    throw new Error('JSON non valido: '+rawText.slice(0,100));
+}
+
+function parseTesseractText(text){
+  const lines = text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  const result = {fn:'',fc:'',fb:'',fl:'',fz:'',fd:'',fs:''};
+
+  // Try MRZ parsing (bottom 2 lines of passport/CIE)
+  const mrzLines = lines.filter(l => /^[A-Z0-9<]{30,}$/.test(l.replace(/\s/g,'')));
+  if(mrzLines.length >= 2){
+    const mrz1 = mrzLines[mrzLines.length-2].replace(/\s/g,'').padEnd(44,'<');
+    const mrz2 = mrzLines[mrzLines.length-1].replace(/\s/g,'').padEnd(44,'<');
+    // MRZ line 2: DOC_NUMBER(9) CHECK NATIONALITY(3) DOB(6) CHECK SEX(1) EXPIRY(6) CHECK
+    const docNum = mrz2.slice(0,9).replace(/</g,'');
+    const nat = mrz2.slice(10,13).replace(/</g,'');
+    const dob = mrz2.slice(13,19);
+    const exp = mrz2.slice(19,25);
+    if(docNum) result.fd = docNum;
+    if(nat && nat!=='<') result.fz = nat;
+    if(dob.length===6){ const y=parseInt(dob.slice(0,2)); result.fb=(y>30?'19':'20')+dob.slice(0,2)+'-'+dob.slice(2,4)+'-'+dob.slice(4,6); }
+    if(exp.length===6){ const y=parseInt(exp.slice(0,2)); result.fs=(y>30?'19':'20')+exp.slice(0,2)+'-'+exp.slice(2,4)+'-'+exp.slice(4,6); }
+    // MRZ line 1 names (TD3 passport: positions 5-43)
+    if(mrz1.length>=44){
+      const namePart = mrz1.slice(5).replace(/</g,' ').trim();
+      const nameSplit = namePart.split('  ').filter(n=>n.trim());
+      if(nameSplit[0]) result.fc = nameSplit[0].trim();
+      if(nameSplit[1]) result.fn = nameSplit[1].replace(/ +/g,' ').trim();
+    }
   }
-  fillF({fn:p.nome,fc:p.cognome,fb:p.data_nascita,fl:p.luogo_nascita,fz:p.nazionalita,fd:p.numero_documento,fs:p.data_scadenza});
-  showMF(true);
+
+  // Fallback: look for date patterns in full text
+  if(!result.fb){
+    const dateMatch = text.match(/(\d{2})[\/\.\-](\d{2})[\/\.\-](\d{2,4})/);
+    if(dateMatch){
+      const y = dateMatch[3].length===2 ? (parseInt(dateMatch[3])>30?'19':'20')+dateMatch[3] : dateMatch[3];
+      result.fb = y+'-'+dateMatch[2]+'-'+dateMatch[1];
+    }
+  }
+
+  // Look for document number pattern (alphanumeric 6-12 chars)
+  if(!result.fd){
+    const docMatch = text.match(/[A-Z]{2}[0-9]{7}|[A-Z][0-9]{8}|[0-9]{9}/);
+    if(docMatch) result.fd = docMatch[0];
+  }
+
+  return result;
 }
 
 // ── MANUAL ───────────────────────────────────────────
