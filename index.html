@@ -298,7 +298,8 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
 /* OCR */
 .ocr-wrap{display:none;flex-direction:column;align-items:center;gap:10px}
 .ocr-wrap.on{display:flex}
-#ocr-video{width:100%;max-width:360px;border-radius:10px;border:2px solid var(--olive);background:#000}
+#ocr-video{width:100%;max-width:340px;max-height:200px;object-fit:cover;border-radius:10px;border:2px solid var(--olive);background:#000}
+.ocr-capture-btn{background:var(--olive);color:white;border:none;border-radius:12px;padding:16px 28px;font-family:'Raleway',sans-serif;font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 14px rgba(92,122,82,.35);display:flex;align-items:center;gap:10px;width:100%;max-width:340px;justify-content:center;}
 
 /* ospite item */
 .osp{display:flex;align-items:center;gap:11px;padding:11px 12px;background:var(--calce);border-radius:9px;border:1px solid var(--border);margin-bottom:8px}
@@ -585,10 +586,8 @@ function s1(){
       <div class="ocr-wrap" id="ocr-wrap">
         <video id="ocr-video" autoplay playsinline></video>
         <p style="font-size:12px;color:var(--muted);text-align:center">Inquadra il documento ben illuminato e a fuoco</p>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-olive btn-sm" onclick="capOCR()">📸 Acquisisci</button>
-          <button class="btn btn-ghost btn-sm" onclick="stopOCR()">Annulla</button>
-        </div>
+        <button class="ocr-capture-btn" onclick="capOCR()">📸 Scatta e leggi il documento</button>
+        <button class="btn btn-ghost btn-sm" style="width:100%;max-width:340px" onclick="stopOCR()">Annulla</button>
         <canvas id="ocr-cv" style="display:none"></canvas>
       </div>
       <div id="mform" style="display:none">
@@ -754,25 +753,45 @@ async function capOCR(){
   const img=c.toDataURL('image/jpeg',.9);
   killStr();document.getElementById('ocr-wrap').classList.remove('on');
   showLdr('Lettura documento…');
-  try{await ocrAPI(img)}catch(e){hideLdr();alert('Lettura non riuscita. Usa inserimento manuale.');showMF();document.getElementById('swrap').style.display='none'}
+  try{await ocrAPI(img)}catch(e){hideLdr();console.error('OCR error:',e);alert('Lettura non riuscita: '+e.message+'\n\nUsa inserimento manuale.');showMF();document.getElementById('swrap').style.display='none'}
 }
 function stopOCR(){killStr();document.getElementById('ocr-wrap').classList.remove('on');document.getElementById('swrap').style.display='flex'}
 function killStr(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
 
 async function ocrAPI(img){
   const b64=img.split(',')[1];
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
-      messages:[{role:'user',content:[
-        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-        {type:'text',text:`Estrai i dati da questo documento di identità. Rispondi SOLO con JSON valido senza testo extra né backtick.
-Campi: nome, cognome, data_nascita (YYYY-MM-DD), luogo_nascita, nazionalita, numero_documento, data_scadenza (YYYY-MM-DD). Se non leggibile usa "".`}
-      ]}]})
-  });
-  const d=await r.json();hideLdr();
-  if(!d.content?.[0])throw new Error('empty');
-  const p=JSON.parse(d.content.map(x=>x.text||'').join('').trim());
+  let r;
+  try{
+    r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+          {type:'text',text:'Estrai i dati da questo documento di identità. Rispondi SOLO con JSON valido senza testo extra né backtick. Campi: nome, cognome, data_nascita (YYYY-MM-DD), luogo_nascita, nazionalita, numero_documento, data_scadenza (YYYY-MM-DD). Se non leggibile usa "".'}
+        ]}]})
+    });
+  }catch(netErr){
+    hideLdr();
+    throw new Error('Errore di rete: '+netErr.message);
+  }
+  if(!r.ok){
+    hideLdr();
+    const errText=await r.text().catch(()=>'');
+    throw new Error('Server error '+r.status+': '+errText.slice(0,200));
+  }
+  const d=await r.json();
+  hideLdr();
+  if(d.error){throw new Error('API error: '+d.error.message);}
+  if(!d.content||!d.content[0]){throw new Error('Risposta vuota dall API');}
+  const rawText=d.content.map(x=>x.text||'').join('').trim();
+  let p;
+  try{
+    // Strip possible markdown code fences
+    const clean=rawText.replace(/```json|```/g,'').trim();
+    p=JSON.parse(clean);
+  }catch(parseErr){
+    throw new Error('JSON non valido: '+rawText.slice(0,100));
+  }
   fillF({fn:p.nome,fc:p.cognome,fb:p.data_nascita,fl:p.luogo_nascita,fz:p.nazionalita,fd:p.numero_documento,fs:p.data_scadenza});
   showMF(true);
 }
