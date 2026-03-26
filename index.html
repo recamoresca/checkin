@@ -771,8 +771,13 @@ async function ocrAPI(img){
     });
     const text = result.data.text;
     hideLdr();
-    // Parse MRZ or free text to extract fields
+    // Show raw text for debugging then parse
     const parsed = parseTesseractText(text);
+    // If nothing was parsed, show raw text so operator can fill manually
+    const hasData = Object.values(parsed).some(v=>v.length>0);
+    if(!hasData){
+      alert('Testo letto dal documento:\n\n'+text.slice(0,600)+'\n\n(Compila i campi manualmente)');
+    }
     fillF(parsed);
     showMF(true);
   }catch(e){
@@ -782,45 +787,95 @@ async function ocrAPI(img){
 }
 
 function parseTesseractText(text){
-  const lines = text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
   const result = {fn:'',fc:'',fb:'',fl:'',fz:'',fd:'',fs:''};
+  // Normalize: uppercase, collapse spaces
+  const raw = text.toUpperCase();
+  const lines = raw.split('\n').map(l=>l.trim()).filter(l=>l);
 
-  // Try MRZ parsing (bottom 2 lines of passport/CIE)
-  const mrzLines = lines.filter(l => /^[A-Z0-9<]{30,}$/.test(l.replace(/\s/g,'')));
-  if(mrzLines.length >= 2){
-    const mrz1 = mrzLines[mrzLines.length-2].replace(/\s/g,'').padEnd(44,'<');
-    const mrz2 = mrzLines[mrzLines.length-1].replace(/\s/g,'').padEnd(44,'<');
-    // MRZ line 2: DOC_NUMBER(9) CHECK NATIONALITY(3) DOB(6) CHECK SEX(1) EXPIRY(6) CHECK
-    const docNum = mrz2.slice(0,9).replace(/</g,'');
-    const nat = mrz2.slice(10,13).replace(/</g,'');
-    const dob = mrz2.slice(13,19);
-    const exp = mrz2.slice(19,25);
-    if(docNum) result.fd = docNum;
-    if(nat && nat!=='<') result.fz = nat;
-    if(dob.length===6){ const y=parseInt(dob.slice(0,2)); result.fb=(y>30?'19':'20')+dob.slice(0,2)+'-'+dob.slice(2,4)+'-'+dob.slice(4,6); }
-    if(exp.length===6){ const y=parseInt(exp.slice(0,2)); result.fs=(y>30?'19':'20')+exp.slice(0,2)+'-'+exp.slice(2,4)+'-'+exp.slice(4,6); }
-    // MRZ line 1 names (TD3 passport: positions 5-43)
-    if(mrz1.length>=44){
-      const namePart = mrz1.slice(5).replace(/</g,' ').trim();
-      const nameSplit = namePart.split('  ').filter(n=>n.trim());
-      if(nameSplit[0]) result.fc = nameSplit[0].trim();
-      if(nameSplit[1]) result.fn = nameSplit[1].replace(/ +/g,' ').trim();
+  // ── MRZ detection ──
+  // MRZ lines contain only A-Z 0-9 < and are 30+ chars
+  const mrzCandidates = lines.filter(l=>{
+    const clean = l.replace(/[^A-Z0-9<]/g,'');
+    return clean.length >= 30;
+  }).map(l=>l.replace(/[^A-Z0-9<]/g,''));
+
+  if(mrzCandidates.length >= 2){
+    // Take last two as MRZ
+    const mrz2 = mrzCandidates[mrzCandidates.length-1].padEnd(44,'<');
+    const mrz1 = mrzCandidates[mrzCandidates.length-2].padEnd(44,'<');
+
+    // Line 2 structure (TD3 passport / CIE):
+    // 0-8: doc number, 9: check, 10-12: nationality, 13-18: DOB YYMMDD, 19: check
+    // 20: sex, 21-26: expiry YYMMDD, 27: check, 28-41: optional, 42: check
+    const docNum = mrz2.slice(0,9).replace(/</g,'').trim();
+    const nat    = mrz2.slice(10,13).replace(/</g,'').trim();
+    const dob    = mrz2.slice(13,19);
+    const expiry = mrz2.slice(21,27);
+
+    if(docNum.length>=5) result.fd = docNum;
+    if(nat.length>=2 && nat!='ITA') result.fz = nat;
+    else if(nat=='ITA') result.fz = 'Italiana';
+
+    if(/^[0-9]{6}$/.test(dob)){
+      const yy=parseInt(dob.slice(0,2));
+      const yyyy = yy>30 ? '19'+dob.slice(0,2) : '20'+dob.slice(0,2);
+      result.fb = yyyy+'-'+dob.slice(2,4)+'-'+dob.slice(4,6);
+    }
+    if(/^[0-9]{6}$/.test(expiry)){
+      const yy=parseInt(expiry.slice(0,2));
+      const yyyy = yy>30 ? '19'+expiry.slice(0,2) : '20'+expiry.slice(0,2);
+      result.fs = yyyy+'-'+expiry.slice(2,4)+'-'+expiry.slice(4,6);
+    }
+
+    // Line 1 names: P<ITA<COGNOME<<NOME<<<<...
+    // or ID card: IDITA<COGNOME<<NOME<<...
+    const nameStart = mrz1.indexOf('<',5);
+    if(nameStart>0){
+      const namePart = mrz1.slice(nameStart+1,44).replace(/</g,' ').trim();
+      // double-space separates surname from given names
+      const parts = namePart.split(/  +/);
+      if(parts[0]) result.fc = parts[0].trim();
+      if(parts[1]) result.fn = parts[1].trim();
     }
   }
 
-  // Fallback: look for date patterns in full text
-  if(!result.fb){
-    const dateMatch = text.match(/(\d{2})[\/\.\-](\d{2})[\/\.\-](\d{2,4})/);
-    if(dateMatch){
-      const y = dateMatch[3].length===2 ? (parseInt(dateMatch[3])>30?'19':'20')+dateMatch[3] : dateMatch[3];
-      result.fb = y+'-'+dateMatch[2]+'-'+dateMatch[1];
+  // ── Fallback: scan lines for known Italian ID labels ──
+  lines.forEach(line=>{
+    // Cognome / Surname
+    if(!result.fc && /COGNOME[:\s]+([A-Z]{2,})/.test(line)){
+      result.fc = line.match(/COGNOME[:\s]+([A-Z\s]+)/)[1].trim();
     }
+    // Nome / Name  
+    if(!result.fn && /NOME[:\s]+([A-Z]{2,})/.test(line)){
+      result.fn = line.match(/NOME[:\s]+([A-Z\s]+)/)[1].trim();
+    }
+    // Luogo di nascita
+    if(!result.fl && /LUOGO[:\s]+([A-Z\s]+)/.test(line)){
+      result.fl = line.match(/LUOGO[:\s]+([A-Z\s]+)/)[1].trim();
+    }
+    // Comune di nascita
+    if(!result.fl && /COMUNE[:\s]+([A-Z\s]+)/.test(line)){
+      result.fl = line.match(/COMUNE[:\s]+([A-Z\s]+)/)[1].trim();
+    }
+    // Nazionalita
+    if(!result.fz && /NAZIONAL[:\s]+([A-Z\s]+)/.test(line)){
+      result.fz = line.match(/NAZIONAL[:\s]+([A-Z\s]+)/)[1].trim();
+    }
+  });
+
+  // ── Fallback dates: DD/MM/YYYY or DD-MM-YYYY ──
+  const allDates = [...raw.matchAll(/(\d{2})[\/\.\-](\d{2})[\/\.\-](\d{4})/g)];
+  if(!result.fb && allDates.length>0){
+    const d=allDates[0]; result.fb=d[3]+'-'+d[2]+'-'+d[1];
+  }
+  if(!result.fs && allDates.length>1){
+    const d=allDates[allDates.length-1]; result.fs=d[3]+'-'+d[2]+'-'+d[1];
   }
 
-  // Look for document number pattern (alphanumeric 6-12 chars)
+  // ── Fallback doc number ──
   if(!result.fd){
-    const docMatch = text.match(/[A-Z]{2}[0-9]{7}|[A-Z][0-9]{8}|[0-9]{9}/);
-    if(docMatch) result.fd = docMatch[0];
+    const m = raw.match(/[A-Z]{2}[0-9]{7}|[A-Z][0-9]{8}|[0-9]{9}|[A-Z]{2}[0-9]{5}[A-Z]{2}/);
+    if(m) result.fd = m[0];
   }
 
   return result;
