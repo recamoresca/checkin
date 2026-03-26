@@ -771,13 +771,9 @@ async function ocrAPI(img){
     });
     const text = result.data.text;
     hideLdr();
-    // Show raw text for debugging then parse
+    // DEBUG: always show raw text
+    alert('TESTO LETTO:\n\n'+text.slice(0,800));
     const parsed = parseTesseractText(text);
-    // If nothing was parsed, show raw text so operator can fill manually
-    const hasData = Object.values(parsed).some(v=>v.length>0);
-    if(!hasData){
-      alert('Testo letto dal documento:\n\n'+text.slice(0,600)+'\n\n(Compila i campi manualmente)');
-    }
     fillF(parsed);
     showMF(true);
   }catch(e){
