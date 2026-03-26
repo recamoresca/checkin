@@ -767,7 +767,7 @@ async function ocrAPI(img){
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
         messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-          {type:'text',text:'Estrai i dati da questo documento di identità. Rispondi SOLO con JSON valido senza testo extra né backtick. Campi: nome, cognome, data_nascita (YYYY-MM-DD), luogo_nascita, nazionalita, numero_documento, data_scadenza (YYYY-MM-DD). Se non leggibile usa "".'}
+          {type:'text',text:'You are an OCR assistant for a hotel reception. Read all text visible in this image and transcribe the following fields into a JSON object: nome (first name), cognome (last name), data_nascita (date of birth in YYYY-MM-DD format), luogo_nascita (place of birth), nazionalita (nationality), numero_documento (document number), data_scadenza (expiry date in YYYY-MM-DD format). Return ONLY the raw JSON object, no markdown, no explanation, no extra text. Use empty string for any field you cannot read clearly.'}
         ]}]})
     });
   }catch(netErr){
