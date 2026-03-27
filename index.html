@@ -613,6 +613,10 @@ function renderHome(){
 
 // ─── MODAL ───────────────────────────────────────────
 function openAdd(){
+  // Check which screen is active to decide which modal
+  const isPren=document.getElementById('screen-pren').classList.contains('active');
+  if(isPren){ openAddPren(); return; }
+  // Original checkin booking modal
   document.getElementById('mo-ttl').textContent='Nuova prenotazione';
   document.getElementById('eid').value='';
   ['mn','mno'].forEach(id=>document.getElementById(id).value='');
@@ -624,6 +628,7 @@ function openAdd(){
   document.getElementById('modal').classList.add('open');
   setTimeout(()=>document.getElementById('mn').focus(),350);
 }
+
 function editBk(id){
   const b=lBK().find(x=>x.id===id);if(!b)return;
   document.getElementById('mo-ttl').textContent='Modifica prenotazione';
@@ -1243,22 +1248,6 @@ function renderPren(){
 }
 
 // ── MODAL PRENOTAZIONE ───────────────────────────────
-function openAdd(){
-  // Check which screen is active to decide which modal
-  const isPren=document.getElementById('screen-pren').classList.contains('active');
-  if(isPren){ openAddPren(); return; }
-  // Original checkin booking modal
-  document.getElementById('mo-ttl').textContent='Nuova prenotazione';
-  document.getElementById('eid').value='';
-  ['mn','mno'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('mo').value='';
-  document.getElementById('del-row').style.display='none';
-  const t=todayStr();
-  document.getElementById('ma').value=t;
-  document.getElementById('mp').value=addD(t,7);
-  document.getElementById('modal').classList.add('open');
-  setTimeout(()=>document.getElementById('mn').focus(),350);
-}
 
 function openAddPren(){
   document.getElementById('modal-pren-ttl').textContent='Nuova prenotazione';
