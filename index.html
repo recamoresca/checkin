@@ -568,6 +568,9 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
 const BK='rcm_bk26',DN='rcm_dn26';
 const lBK=()=>{try{return JSON.parse(localStorage.getItem(BK)||'[]')}catch{return[]}};
 const sBK=a=>localStorage.setItem(BK,JSON.stringify(a));
+const PK='rcm_pren26';
+const lPK=()=>{try{return JSON.parse(localStorage.getItem(PK)||'[]')}catch{return[]}};
+const sPK=a=>localStorage.setItem(PK,JSON.stringify(a));
 const lDN=()=>{try{return JSON.parse(localStorage.getItem(DN)||'{}')}catch{return{}}};
 const mDN=id=>{const d=lDN();d[id]=true;localStorage.setItem(DN,JSON.stringify(d))};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
