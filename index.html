@@ -231,6 +231,10 @@ body{font-family:'Raleway',sans-serif;background:var(--calce);color:var(--ink);f
 .div span{position:relative;background:var(--white);padding:0 10px;font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
 
 </style>
+<script>
+// Thin global wrappers defined immediately so onclick works
+function showSection(t){ if(window._appReady) window._showSection(t); else setTimeout(function(){showSection(t);},100); }
+</script>
 </head>
 <body>
 
@@ -247,12 +251,12 @@ body{font-family:'Raleway',sans-serif;background:var(--calce);color:var(--ink);f
     </div>
   </div>
   <div class="home-tiles">
-    <div class="tile tile-left" id="tile-pren">
+    <div class="tile tile-left" id="tile-pren" onclick="showSection('prenotazioni')" style="cursor:pointer">
       <div class="tile-icon">📋</div>
       <div class="tile-label">Prenotazioni</div>
       <div class="tile-sub">Info ospiti · stagione</div>
     </div>
-    <div class="tile tile-right" id="tile-ci">
+    <div class="tile tile-right" id="tile-ci" onclick="showSection('checkin')" style="cursor:pointer">
       <div class="tile-icon">🗝️</div>
       <div class="tile-label">Check-in</div>
       <div class="tile-sub">Arrivi del giorno</div>
@@ -273,12 +277,12 @@ body{font-family:'Raleway',sans-serif;background:var(--calce);color:var(--ink);f
     </div>
   </div>
   <div class="home-tiles">
-    <div class="tile tile-left" id="tile-pren">
+    <div class="tile tile-left" id="tile-pren" onclick="showSection('prenotazioni')" style="cursor:pointer">
       <div class="tile-icon">📋</div>
       <div class="tile-label">Prenotazioni</div>
       <div class="tile-sub">Info ospiti · stagione</div>
     </div>
-    <div class="tile tile-right" id="tile-ci">
+    <div class="tile tile-right" id="tile-ci" onclick="showSection('checkin')" style="cursor:pointer">
       <div class="tile-icon">🗝️</div>
       <div class="tile-label">Check-in</div>
       <div class="tile-sub">Arrivi del giorno</div>
@@ -408,6 +412,11 @@ body{font-family:'Raleway',sans-serif;background:var(--calce);color:var(--ink);f
 </div>
 
 
+
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('I9MHhau0Zw3ZcX7mj')">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('I9MHhau0Zw3ZcX7mj')"></script>
 
 <script>
 
@@ -1061,7 +1070,8 @@ const fmtLong=d=>{if(!d)return'';return new Date(d+'T12:00:00').toLocaleDateStri
 const fmtMonth=mk=>{const[y,m]=mk.split('-');const N=['','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];return`${N[+m]} ${y}`};
 
 // ── SECTION NAVIGATION ──────────────────────────────
-function showSection(type){
+function showSection(type){ window._showSection(type); }
+window._showSection = function(type){
   try{
     if(type==='prenotazioni'){
       syncAll().then(()=>{ renderPren(); }).catch(()=>renderPren());
@@ -1262,6 +1272,8 @@ async function init(){
   await syncAll();
   hideLdr();
   renderHome();
+  attachTileEvents();
+  window._appReady = true;
 }
 init();
 
@@ -1330,10 +1342,10 @@ if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', attachTileEvents);
 } else {
   attachTileEvents();
+  window._appReady = true;
 }
 renderHome();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('I9MHhau0Zw3ZcX7mj')">
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('I9MHhau0Zw3ZcX7mj')"></script>
 </body>
