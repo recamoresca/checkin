@@ -945,55 +945,68 @@ async function send(){
   const email=document.getElementById('eml')?.value.trim();
   if(!email||!email.includes('@')){alert('Inserisci un indirizzo email valido.');return}
   showLdr('Invio dati in corso…');
-  const b=ci.bk,n=nights(b.arrivo,b.partenza),txt=buildTxt(n);
+  const b=ci.bk,n=nights(b.arrivo,b.partenza);
+  const htmlEmail=buildHtmlEmail(n);
   try{
     await emailjs.send('service_tsjwj0q','template_yp4iy4r',{
       to_email: email,
-      subject: 'Check-in Casa Moresca — '+b.nome,
       nome_ospite: b.nome,
-      arrivo: fmtD(b.arrivo),
-      partenza: fmtD(b.partenza),
-      notti: String(n),
-      num_ospiti: String(b.num),
-      note: b.note||'—',
-      dati_ospiti: ci.ospiti.map((o,i)=>`[Ospite ${i+1}] ${o.nome} ${o.cognome} — nato il ${fmtD(o.nascita)} a ${o.luogo} — Naz: ${o.naz} — Doc: ${o.docnum} scad. ${fmtD(o.scad)}`).join('\n'),
-      messaggio: txt,
+      messaggio: htmlEmail,
     });
-    navigator.clipboard?.writeText(txt).catch(()=>{});
     mDN(b.id);hideLdr();
     document.getElementById('ok-msg').innerHTML=`Dati di <strong>${b.nome}</strong> inviati a ${email}.<br>Pronti per l'inserimento in Octorate.`;
     showScr('screen-ok');renderHome();
   }catch(e){
     hideLdr();
-    navigator.clipboard?.writeText(txt).catch(()=>{});
-    alert('Errore invio email: '+(e.text||JSON.stringify(e))+'\n\nI dati sono stati copiati negli appunti.');
-    mDN(b.id);
-    document.getElementById('ok-msg').innerHTML=`Dati copiati negli appunti.<br>Incollali nella tua email.`;
-    showScr('screen-ok');renderHome();
+    alert('Errore invio email: '+(e.text||JSON.stringify(e)));
   }
 }
-function buildTxt(n){
+
+
+function buildTxt(n){ return buildHtmlEmail(n); }
+
+function buildHtmlEmail(n){
   const b=ci.bk;
-  return`RELAIS CASA MORESCA — CHECK-IN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Prenotazione:  ${b.nome}
-Arrivo:        ${fmtD(b.arrivo)}
-Partenza:      ${fmtD(b.partenza)}
-Notti:         ${n}
-Num. ospiti:   ${b.num}${b.note?'\nNote:          '+b.note:''}
-
-OSPITI
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${ci.ospiti.map((o,i)=>`Ospite ${i+1}
-  Nome:         ${o.nome} ${o.cognome}
-  Nato il:      ${fmtD(o.nascita)} a ${o.luogo}
-  Nazionalità:  ${o.naz}
-  Documento:    ${o.tipo||'—'} n° ${o.docnum}
-  Scadenza:     ${fmtD(o.scad)}`).join('\n\n')}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Check-in: ${new Date().toLocaleString('it-IT')}`;
+  const logo='https://static.wixstatic.com/media/cb1b98_b84204f1641846b8938a218cd263e9e2~mv2.png/v1/fill/w_341,h_82,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/banner%20grande%20400dpi.png';
+  const green='#5C7A52', sand='#FAF6F0', white='#FFFFFF', border='#D6CCC0', muted='#8A7060', ink='#1C1C1C';
+  const row=(label,val)=>`<tr>
+    <td style="padding:9px 14px;font-size:12px;color:${muted};font-weight:600;width:38%;border-bottom:1px solid #F0EBE3;font-family:Raleway,sans-serif;">${label}</td>
+    <td style="padding:9px 14px;font-size:13px;color:${ink};border-bottom:1px solid #F0EBE3;font-family:Raleway,sans-serif;">${val}</td>
+  </tr>`;
+  const sectionHeader=(title)=>`<div style="background:${green};color:white;padding:8px 14px;border-radius:6px 6px 0 0;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;font-family:Raleway,sans-serif;">${title}</div>`;
+  const ospiti=ci.ospiti.map((o,i)=>`
+    ${sectionHeader('Ospite '+(i+1))}
+    <table style="width:100%;border-collapse:collapse;background:${white};border:1px solid ${border};border-top:none;border-radius:0 0 6px 6px;margin-bottom:16px;">
+      ${row('Nome',o.nome)}
+      ${row('Cognome',o.cognome)}
+      ${row('Data di nascita',fmtD(o.nascita))}
+      ${row('Luogo di nascita',o.luogo)}
+      ${row('Nazionalità',o.naz)}
+      ${row('Tipo documento',o.tipo||'—')}
+      ${row('N° documento',o.docnum)}
+      ${row('Scadenza',fmtD(o.scad))}
+    </table>`).join('');
+  return `<div style="font-family:Raleway,Georgia,sans-serif;max-width:600px;margin:0 auto;background:${sand};padding:24px;">
+    <div style="text-align:center;border-bottom:2px solid ${green};padding-bottom:16px;margin-bottom:24px;">
+      <img src="${logo}" alt="Relais Casa Moresca" style="max-width:100%;width:240px;height:auto;display:block;margin:0 auto 8px;mix-blend-mode:multiply;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:${green};font-weight:700;font-family:Raleway,sans-serif;">Check-in · Porto Badino</div>
+    </div>
+    ${sectionHeader('Prenotazione')}
+    <table style="width:100%;border-collapse:collapse;background:${white};border:1px solid ${border};border-top:none;border-radius:0 0 6px 6px;margin-bottom:20px;">
+      ${row('Intestatario','<strong>'+b.nome+'</strong>')}
+      ${row('Arrivo',fmtD(b.arrivo))}
+      ${row('Partenza',fmtD(b.partenza))}
+      ${row('Notti',String(n))}
+      ${row('Num. ospiti',String(b.num))}
+      ${b.note?row('Note',b.note):''}
+    </table>
+    ${ospiti}
+    <div style="text-align:center;margin-top:16px;font-size:10px;color:${muted};letter-spacing:0.1em;text-transform:uppercase;font-weight:600;font-family:Raleway,sans-serif;">
+      Relais Casa Moresca · Via Didone 9 · Porto Badino (LT) · Check-in: ${new Date().toLocaleString('it-IT')}
+    </div>
+  </div>`;
 }
+
 
 // ── NAVIGATION ───────────────────────────────────────
 function showScr(id){
