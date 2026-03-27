@@ -427,19 +427,18 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
       <span class="hdr-checkin-label">Gestione</span>
     </div>
   </div>
-  <div class="home-tiles">
-    <div class="tile tile-left" onclick="showSection('prenotazioni')">
+  <diclass="home-tiles">
+    <div class="tile tile-left" id="tile-pren">
       <div class="tile-icon">📋</div>
       <div class="tile-label">Prenotazioni</div>
       <div class="tile-sub">Info ospiti · stagione</div>
     </div>
-    <div class="tile tile-right" onclick="showSection('checkin')">
+    <div class="tile tile-right" id="tile-ci">
       <div class="tile-icon">✅</div>
       <div class="tile-label">Check-in</div>
       <div class="tile-sub">Arrivi del giorno</div>
     </div>
-  </div>
-</div>
+  /div>
 
 <!-- ════════════ CHECK-IN ════════════ -->
 <div class="screen slide-r" id="screen-ci">
@@ -1379,6 +1378,12 @@ function renderListCI(){
 }
 
 // ── INIT ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  var tilePren = document.getElementById('tile-pren');
+  var tileCi = document.getElementById('tile-ci');
+  if(tilePren) tilePren.addEventListener('click', function(){ showSection('prenotazioni'); });
+  if(tileCi) tileCi.addEventListener('click', function(){ showSection('checkin'); });
+});
 renderHome();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('I9MHhau0Zw3ZcX7mj')"></script>
