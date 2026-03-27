@@ -959,6 +959,51 @@ async function send(){
     showScr('screen-ok');renderHome();
   }
 }
+function buildTxt(n){
+  const b=ci.bk;
+  return`RELAIS CASA MORESCA — CHECK-IN
+━━━━━━━━━━━━━━━━━━━━━━━
+Prenotazione: ${b.nome}
+Arrivo:   ${fmtD(b.arrivo)}
+Partenza: ${fmtD(b.partenza)}
+Notti:    ${n}
+Ospiti:   ${b.num}
+${b.note?'Note: '+b.note:''}
+DOCUMENTI OSPITI
+${ci.ospiti.map((o,i)=>`
+[Ospite ${i+1}]
+Nome:          ${o.nome} ${o.cognome}
+Nato il:       ${fmtD(o.nascita)}
+Luogo nascita: ${o.luogo}
+Nazionalità:   ${o.naz}
+N° documento:  ${o.docnum}
+Scadenza:      ${fmtD(o.scad)}`).join('')}
+
+CONSENSI
+✓ Contratto di soggiorno firmato
+✓ Informativa privacy accettata
+✓ Firma acquisita
+Check-in: ${new Date().toLocaleString('it-IT')}`;
+}
+
+// ── NAVIGATION ───────────────────────────────────────
+function showScr(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');if(s.id!==id)s.classList.add('slide-r')});
+  const t=document.getElementById(id);t.classList.remove('slide-r');t.classList.add('active');
+}
+function goHome(){killStr();showScr('screen-home')}
+
+// ── LOADER ────────────────────────────────────────────
+function showLdr(t){document.getElementById('ltxt').textContent=t||'…';document.getElementById('ldr').classList.add('on')}
+function hideLdr(){document.getElementById('ldr').classList.remove('on')}
+
+// ── DATE UTILS ────────────────────────────────────────
+const todayStr=()=>new Date().toISOString().split('T')[0];
+const addD=(s,n)=>{const d=new Date(s);d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]};
+const nights=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+const fmtD=d=>{if(!d)return'—';const[y,m,g]=d.split('-');return`${g}/${m}/${y}`};
+const fmtLong=d=>{if(!d)return'';return new Date(d+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})};
+const fmtMonth=mk=>{const[y,m]=mk.split('-');const N=['','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];return`${N[+m]} ${y}`};
 
 // ── INIT ──────────────────────────────────────────────
 renderHome();
