@@ -567,6 +567,7 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
 <script>
 // ─── STORAGE ─────────────────────────────────────────
 const BK='rcm_bk26',DN='rcm_dn26',PK='rcm_pren26';
+// BK is now an alias for PK - single source of truth
 const WORKER='https://red-resonance-d4ba.bnbcasamoresca.workers.dev';
 
 // ── KV sync helpers ──
@@ -631,7 +632,7 @@ function openAdd(){
 }
 
 function editBk(id){
-  const b=lBK().find(x=>x.id===id);if(!b)return;
+  const b=lPK().find(x=>x.id===id);if(!b)return;
   document.getElementById('mo-ttl').textContent='Modifica prenotazione';
   document.getElementById('eid').value=id;
   document.getElementById('mn').value=b.nome;
@@ -668,7 +669,7 @@ let ci={bk:null,step:1,ospiti:[],sig:null};
 let stream=null,nfcAb=null;
 
 function startCI(id){
-  const b=lBK().find(x=>x.id===id);if(!b)return;
+  const b=lPK().find(x=>x.id===id);if(!b)return;
   ci={bk:b,step:1,ospiti:[],sig:null};
   document.getElementById('ci-name').textContent=b.nome;
   document.getElementById('ci-meta').textContent=`${fmtD(b.arrivo)} → ${fmtD(b.partenza)} · ${b.num} ospit${b.num===1?'e':'i'}`;
@@ -1356,7 +1357,7 @@ async function delPren(){
 
 // ── CHECKIN LIST SCREEN ───────────────────────────────
 function renderListCI(){
-  const bks=lBK(),dn=lDN(),td=todayStr();
+  const bks=lPK(),dn=lDN(),td=todayStr();
   const body=document.getElementById('list-ci-body');
   const titleEl=document.getElementById('list-ci-title');
 
