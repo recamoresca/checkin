@@ -566,14 +566,45 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
 
 <script>
 // ─── STORAGE ─────────────────────────────────────────
-const BK='rcm_bk26',DN='rcm_dn26';
-const lBK=()=>{try{return JSON.parse(localStorage.getItem(BK)||'[]')}catch{return[]}};
-const sBK=a=>localStorage.setItem(BK,JSON.stringify(a));
-const PK='rcm_pren26';
-const lPK=()=>{try{return JSON.parse(localStorage.getItem(PK)||'[]')}catch{return[]}};
-const sPK=a=>localStorage.setItem(PK,JSON.stringify(a));
-const lDN=()=>{try{return JSON.parse(localStorage.getItem(DN)||'{}')}catch{return{}}};
-const mDN=id=>{const d=lDN();d[id]=true;localStorage.setItem(DN,JSON.stringify(d))};
+const BK='rcm_bk26',DN='rcm_dn26',PK='rcm_pren26';
+const WORKER='https://red-resonance-d4ba.bnbcasamoresca.workers.dev';
+
+// ── KV sync helpers ──
+async function kvLoad(key){
+  try{
+    const r=await fetch(WORKER+'/load?key='+key);
+    return await r.json();
+  }catch(e){
+    // fallback to localStorage
+    try{return JSON.parse(localStorage.getItem(key)||'[]')}catch{return[]}
+  }
+}
+async function kvSave(key,data){
+  try{
+    await fetch(WORKER+'/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,data})});
+    localStorage.setItem(key,JSON.stringify(data));
+  }catch(e){
+    localStorage.setItem(key,JSON.stringify(data));
+  }
+}
+
+// ── Sync state ──
+let _bk=[],_pren=[],_dn={};
+
+async function syncAll(){
+  _bk=await kvLoad(BK);
+  _pren=await kvLoad(PK);
+  _dn=await kvLoad(DN);
+  if(!Array.isArray(_dn)) _dn={};
+}
+
+// ── Storage API ──
+const lBK=()=>_bk;
+const sBK=async a=>{_bk=a;await kvSave(BK,a);};
+const lPK=()=>_pren;
+const sPK=async a=>{_pren=a;await kvSave(PK,a);};
+const lDN=()=>_dn;
+const mDN=async id=>{_dn[id]=true;await kvSave(DN,_dn);};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 // ─── HOME ────────────────────────────────────────────
@@ -613,7 +644,7 @@ function editBk(id){
 }
 function closeModal(){document.getElementById('modal').classList.remove('open')}
 function bgClose(e){if(e.target===document.getElementById('modal'))closeModal()}
-function saveBk(){
+async function saveBk(){
   const nome=document.getElementById('mn').value.trim();
   const arrivo=document.getElementById('ma').value;
   const partenza=document.getElementById('mp').value;
@@ -624,12 +655,12 @@ function saveBk(){
   const bks=lBK(),eid=document.getElementById('eid').value;
   if(eid){const i=bks.findIndex(x=>x.id===eid);if(i>=0)bks[i]={...bks[i],nome,arrivo,partenza,num:+num,note}}
   else bks.push({id:uid(),nome,arrivo,partenza,num:+num,note});
-  sBK(bks);closeModal();renderHome();
+  await sBK(bks);closeModal();renderHome();
 }
-function delBk(){
+async function delBk(){
   const id=document.getElementById('eid').value;if(!id)return;
   if(!confirm('Eliminare questa prenotazione?'))return;
-  sBK(lBK().filter(x=>x.id!==id));closeModal();renderHome();
+  await sBK(lBK().filter(x=>x.id!==id));closeModal();renderHome();
 }
 
 // ─── CHECK-IN STATE ──────────────────────────────────
@@ -1062,7 +1093,7 @@ async function send(){
       nome_ospite: b.nome,
       messaggio: txt,
     });
-    mDN(b.id);hideLdr();
+    await mDN(b.id);hideLdr();
     document.getElementById('ok-msg').innerHTML=`Dati di <strong>${b.nome}</strong> inviati a ${email}.<br>Pronti per l'inserimento in Octorate.`;
     showScr('screen-ok');renderHome();
   }catch(e){
@@ -1162,7 +1193,12 @@ function showScr(id){
     });
   });
 }
-function goHome(){killStr();showScr('screen-home')}
+function goHome(){
+  killStr();
+  showScr('screen-home');
+  // Refresh data in background
+  syncAll().catch(()=>{});
+}
 
 // ── LOADER ────────────────────────────────────────────
 function showLdr(t){document.getElementById('ltxt').textContent=t||'…';document.getElementById('ldr').classList.add('on')}
@@ -1180,7 +1216,7 @@ const fmtMonth=mk=>{const[y,m]=mk.split('-');const N=['','Gennaio','Febbraio','M
 function showSection(type){
   try{
     if(type==='prenotazioni'){
-      renderPren();
+      syncAll().then(()=>{ renderPren(); }).catch(()=>renderPren());
       showScr('screen-pren');
       // Attach FAB click with PIN
       var fab=document.getElementById('fab-pren');
@@ -1193,7 +1229,7 @@ function showSection(type){
         });
       }
     } else {
-      renderListCI();
+      syncAll().then(()=>{ renderListCI(); }).catch(()=>renderListCI());
       showScr('screen-list-ci');
     }
   }catch(e){
@@ -1288,7 +1324,7 @@ function editPren(id){
 function closeModalPren(){document.getElementById('modal-pren').classList.remove('open')}
 function bgClosePren(e){if(e.target===document.getElementById('modal-pren'))closeModalPren()}
 
-function savePren(){
+async function savePren(){
   const nome=document.getElementById('pn').value.trim();
   const arrivo=document.getElementById('pa').value;
   const partenza=document.getElementById('pp').value;
@@ -1309,13 +1345,13 @@ function savePren(){
   const pren=lPK();
   const idx=pren.findIndex(x=>x.id===p.id);
   if(idx>=0) pren[idx]=p; else pren.push(p);
-  sPK(pren);closeModalPren();renderPren();
+  await sPK(pren);closeModalPren();renderPren();
 }
 
-function delPren(){
+async function delPren(){
   const id=document.getElementById('peid').value;if(!id)return;
   if(!confirm('Eliminare questa prenotazione?'))return;
-  sPK(lPK().filter(x=>x.id!==id));closeModalPren();renderPren();
+  await sPK(lPK().filter(x=>x.id!==id));closeModalPren();renderPren();
 }
 
 // ── CHECKIN LIST SCREEN ───────────────────────────────
@@ -1371,6 +1407,14 @@ function renderListCI(){
 }
 
 // ── INIT ──────────────────────────────────────────────
+async function init(){
+  showLdr('Caricamento dati…');
+  await syncAll();
+  hideLdr();
+  renderHome();
+}
+init();
+
 // Attach tile events after DOM ready
 function attachTileEvents(){
   var tilePren = document.getElementById('tile-pren');
