@@ -551,6 +551,7 @@ let stream=null,nfcAb=null;
 
 function startCI(id){
   const b=lPK().find(x=>x.id===id);if(!b)return;
+  history.pushState({screen:'screen-ci'},'',location.href);
   ci={bk:b,step:1,ospiti:[],sig:null};
   document.getElementById('ci-name').textContent=b.nome;
   document.getElementById('ci-meta').textContent=`${fmtD(b.arrivo)} → ${fmtD(b.partenza)} · ${b.num} ospit${b.num===1?'e':'i'}`;
@@ -1100,6 +1101,7 @@ function showSection(type){
     if(type==='prenotazioni'){
       syncAll().then(()=>{ renderPren(); }).catch(()=>renderPren());
       showScr('screen-pren');
+      history.pushState({screen:'screen-pren'},'',location.href);
       // Attach FAB click with PIN
       var fab=document.getElementById('fab-pren');
       if(fab&&!fab._bound){
@@ -1113,6 +1115,7 @@ function showSection(type){
     } else {
       syncAll().then(()=>{ renderListCI(); }).catch(()=>renderListCI());
       showScr('screen-list-ci');
+      history.pushState({screen:'screen-list-ci'},'',location.href);
     }
   }catch(e){
     alert('Errore: '+e.message);
@@ -1344,15 +1347,6 @@ window.addEventListener('popstate', function(e){
 });
 // Push initial state
 history.pushState(null,'',location.href);
-
-// ── INTERCEPT showScr to manage history ──────────────
-const _origShowScr=showScr;
-function showScr(id){
-  _origShowScr(id);
-  if(id!=='screen-home'){
-    history.pushState({screen:id},'',location.href);
-  }
-}
 
 // Attach tile events after DOM ready
 function attachTileEvents(){
