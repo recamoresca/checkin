@@ -50,7 +50,7 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
 /* ══════════════════════════════════════
    HOME
 ══════════════════════════════════════ */
-#screen-home{background:var(--calce);display:flex;flex-direction:column}
+#screen-home{background:var(--calce);position:fixed;inset:0;}
 
 .home-hdr{
   background:white;
@@ -349,11 +349,12 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
 
 /* ── TILES ── */
 .home-tiles{
-  flex:1;display:flex;flex-direction:row;align-items:center;justify-content:center;
-  gap:20px;padding:32px 24px;
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  display:flex;flex-direction:row;align-items:stretch;justify-content:center;
+  gap:20px;width:100%;padding:0 24px;
 }
 .tile{
-  flex:1;max-width:150px;
+  flex:1;max-width:160px;
   background:var(--white);border-radius:20px;
   border:1px solid var(--border);
   padding:28px 16px;text-align:center;
@@ -427,7 +428,7 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
       <span class="hdr-checkin-label">Gestione</span>
     </div>
   </div>
-  <diclass="home-tiles">
+  <div class="home-tiles">
     <div class="tile tile-left" id="tile-pren">
       <div class="tile-icon">📋</div>
       <div class="tile-label">Prenotazioni</div>
@@ -438,7 +439,8 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
       <div class="tile-label">Check-in</div>
       <div class="tile-sub">Arrivi del giorno</div>
     </div>
-  /div>
+  </div>
+</div>
 
 <!-- ════════════ CHECK-IN ════════════ -->
 <div class="screen slide-r" id="screen-ci">
@@ -572,45 +574,10 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 // ─── HOME ────────────────────────────────────────────
 function renderHome(){
-  const bks=lBK(),dn=lDN(),td=todayStr(),body=document.getElementById('home-body');
-  if(!bks.length){
-    body.innerHTML=`<div class="empty"><div class="empty-icon">🏡</div><p>Nessuna prenotazione inserita.<br>Tocca <strong>＋</strong> per aggiungere la prima prenotazione della stagione.</p></div>`;
-    return;
-  }
-  const sorted=[...bks].sort((a,b)=>a.arrivo.localeCompare(b.arrivo));
-  const tdArr=sorted.filter(b=>b.arrivo===td);
-  let h='';
-  if(tdArr.length) h+=`<div class="today-banner"><div><strong>Arrivi di oggi</strong><span>${fmtLong(td)}</span></div><div class="today-ct">${tdArr.length} arriv${tdArr.length===1?'o':'i'}</div></div>`;
-  const months={};
-  sorted.forEach(b=>{const k=b.arrivo.slice(0,7);if(!months[k])months[k]=[];months[k].push(b)});
-  Object.entries(months).forEach(([k,list])=>{
-    h+=`<div class="mo-lbl">${fmtMonth(k)}</div>`;
-    list.forEach(b=>{
-      const isTd=b.arrivo===td,isDn=!!dn[b.id];
-      const[,mm,dd]=b.arrivo.split('-');
-      const mo=['','Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'][+mm];
-      const n=nights(b.arrivo,b.partenza);
-      h+=`<div class="bk${isTd?' today-card':''}${isDn?' done-card':''}" onclick="startCI('${b.id}')">
-        <div class="bk-row">
-          <div class="bk-cal${isTd?' td':''}"><div class="dy">${dd}</div><div class="mo">${mo}</div></div>
-          <div class="bk-inf">
-            <div class="bk-name">${b.nome}</div>
-            <div class="bk-sub">→ ${fmtD(b.partenza)} · ${b.num} ospit${b.num===1?'e':'i'}${b.note?' · '+b.note:''}</div>
-          </div>
-          <div class="bk-ic ${isDn?'ic-d':isTd?'ic-t':'ic-p'}">${isDn?'✓':isTd?'→':'○'}</div>
-        </div>
-        <div class="bk-foot">
-          <span class="pill ${isDn?'pill-d':isTd?'pill-t':'pill-p'}">${isDn?'Completato':isTd?'Oggi':'In arrivo'}</span>
-          <span class="bk-n">${n} nott${n===1?'e':'i'}</span>
-          <button class="bk-more" onclick="event.stopPropagation();editBk('${b.id}')">⋯</button>
-        </div>
-      </div>`;
-    });
-  });
-  body.innerHTML=h;
+  // Home now has static tiles - nothing to render dynamically
 }
 
-// ─── MODAL ───────────────────────────────────────────
+
 function openAdd(){
   // Check which screen is active to decide which modal
   const isPren=document.getElementById('screen-pren').classList.contains('active');
@@ -1175,8 +1142,21 @@ function buildHtmlEmail(n){
 
 // ── NAVIGATION ───────────────────────────────────────
 function showScr(id){
-  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');if(s.id!==id)s.classList.add('slide-r')});
-  const t=document.getElementById(id);t.classList.remove('slide-r');t.classList.add('active');
+  // Hide all screens instantly
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active');
+    s.classList.add('slide-r');
+  });
+  // Show target screen
+  const t=document.getElementById(id);
+  if(!t){ console.error('Screen not found:',id); return; }
+  t.classList.remove('slide-r');
+  // Small delay to trigger transition
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      t.classList.add('active');
+    });
+  });
 }
 function goHome(){killStr();showScr('screen-home')}
 
@@ -1203,7 +1183,7 @@ function showSection(type){
       showScr('screen-list-ci');
     }
   }catch(e){
-    alert('Errore: '+e.message+' — '+e.stack.slice(0,200));
+    alert('Errore showSection: '+e.message);
   }
 }
 
@@ -1378,12 +1358,24 @@ function renderListCI(){
 }
 
 // ── INIT ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function(){
+// Attach tile events after DOM ready
+function attachTileEvents(){
   var tilePren = document.getElementById('tile-pren');
   var tileCi = document.getElementById('tile-ci');
-  if(tilePren) tilePren.addEventListener('click', function(){ showSection('prenotazioni'); });
-  if(tileCi) tileCi.addEventListener('click', function(){ showSection('checkin'); });
-});
+  if(tilePren){
+    tilePren.addEventListener('click', function(e){ e.preventDefault(); showSection('prenotazioni'); });
+    tilePren.addEventListener('touchend', function(e){ e.preventDefault(); showSection('prenotazioni'); });
+  }
+  if(tileCi){
+    tileCi.addEventListener('click', function(e){ e.preventDefault(); showSection('checkin'); });
+    tileCi.addEventListener('touchend', function(e){ e.preventDefault(); showSection('checkin'); });
+  }
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', attachTileEvents);
+} else {
+  attachTileEvents();
+}
 renderHome();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('I9MHhau0Zw3ZcX7mj')"></script>
