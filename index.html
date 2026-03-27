@@ -945,29 +945,12 @@ async function send(){
   const email=document.getElementById('eml')?.value.trim();
   if(!email||!email.includes('@')){alert('Inserisci un indirizzo email valido.');return}
   showLdr('Invio dati in corso…');
-  const b=ci.bk,n=nights(b.arrivo,b.partenza);
-  // Build dati_ospiti as plain text, one guest per block
-  const datiOspiti=ci.ospiti.map((o,i)=>[
-    `Ospite ${i+1}`,
-    `Nome:           ${o.nome}`,
-    `Cognome:        ${o.cognome}`,
-    `Data nascita:   ${fmtD(o.nascita)}`,
-    `Luogo nascita:  ${o.luogo}`,
-    `Nazionalità:    ${o.naz}`,
-    `Tipo documento: ${o.tipo||'—'}`,
-    `N° documento:   ${o.docnum}`,
-    `Scadenza:       ${fmtD(o.scad)}`,
-  ].join('\n')).join('\n\n');
+  const b=ci.bk,n=nights(b.arrivo,b.partenza),txt=buildTxt(n);
   try{
     await emailjs.send('service_tsjwj0q','template_yp4iy4r',{
       to_email: email,
       nome_ospite: b.nome,
-      arrivo: fmtD(b.arrivo),
-      partenza: fmtD(b.partenza),
-      notti: String(n),
-      num_ospiti: String(b.num),
-      note: b.note||'—',
-      dati_ospiti: datiOspiti,
+      messaggio: txt,
     });
     mDN(b.id);hideLdr();
     document.getElementById('ok-msg').innerHTML=`Dati di <strong>${b.nome}</strong> inviati a ${email}.<br>Pronti per l'inserimento in Octorate.`;
@@ -979,7 +962,34 @@ async function send(){
 }
 
 
-function buildTxt(n){ return buildHtmlEmail(n); }
+function buildTxt(n){
+  const b=ci.bk;
+  const sep='─'.repeat(38);
+  const ospiti=ci.ospiti.map((o,i)=>`
+Ospite ${i+1}
+  Nome:           ${o.nome}
+  Cognome:        ${o.cognome}
+  Data nascita:   ${fmtD(o.nascita)}
+  Luogo nascita:  ${o.luogo}
+  Nazionalità:    ${o.naz}
+  Tipo documento: ${o.tipo||'—'}
+  N° documento:   ${o.docnum}
+  Scadenza doc:   ${fmtD(o.scad)}`).join('\n');
+  return `RELAIS CASA MORESCA — CHECK-IN
+${sep}
+Intestatario: ${b.nome}
+Arrivo:       ${fmtD(b.arrivo)}
+Partenza:     ${fmtD(b.partenza)}
+Notti:        ${n}
+Num. ospiti:  ${b.num}${b.note?'\nNote:         '+b.note:''}
+${sep}
+OSPITI
+${sep}
+${ospiti}
+${sep}
+Check-in: ${new Date().toLocaleString('it-IT')}`;
+}
+
 
 function buildHtmlEmail(n){
   const b=ci.bk;
