@@ -474,7 +474,7 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
     <div class="sect-title">Prenotazioni stagione</div>
   </div>
   <div class="sect-body" id="pren-body"></div>
-  <button class="fab" onclick="openAdd()" style="background:var(--olive)">＋</button>
+  <button class="fab" id="fab-pren" style="background:var(--olive)">＋</button>
 </div>
 
 <!-- ════════════ SCREEN: LISTA CHECKIN ════════════ -->
@@ -1178,19 +1178,25 @@ function showSection(type){
     if(type==='prenotazioni'){
       renderPren();
       showScr('screen-pren');
+      // Attach FAB click with PIN
+      var fab=document.getElementById('fab-pren');
+      if(fab&&!fab._bound){
+        fab._bound=true;
+        fab.addEventListener('click',function(){
+          var pin=prompt('PIN amministratore:');
+          if(pin==='6581') openAddPren();
+          else if(pin!==null) alert('PIN non corretto.');
+        });
+      }
     } else {
       renderListCI();
       showScr('screen-list-ci');
     }
   }catch(e){
-    alert('Errore showSection: '+e.message);
+    alert('Errore: '+e.message);
   }
 }
 
-// ── PRENOTAZIONI SCREEN ──────────────────────────────
-const PK='rcm_pren26';
-const lPK=()=>{try{return JSON.parse(localStorage.getItem(PK)||'[]')}catch{return[]}};
-const sPK=a=>localStorage.setItem(PK,JSON.stringify(a));
 
 function renderPren(){
   const pren=lPK();
