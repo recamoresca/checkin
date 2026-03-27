@@ -50,7 +50,7 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
 /* ══════════════════════════════════════
    HOME
 ══════════════════════════════════════ */
-#screen-home{background:var(--calce)}
+#screen-home{background:var(--calce);display:flex;flex-direction:column}
 
 .home-hdr{
   background:white;
@@ -349,11 +349,11 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
 
 /* ── TILES ── */
 .home-tiles{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  gap:20px;padding:24px 20px;
+  flex:1;display:flex;flex-direction:row;align-items:center;justify-content:center;
+  gap:20px;padding:32px 24px;
 }
 .tile{
-  flex:1;max-width:160px;
+  flex:1;max-width:150px;
   background:var(--white);border-radius:20px;
   border:1px solid var(--border);
   padding:28px 16px;text-align:center;
@@ -1302,7 +1302,7 @@ function savePren(){
   const partenza=document.getElementById('pp').value;
   const num=document.getElementById('po').value;
   if(!nome||!arrivo||!partenza||!num){alert('Compila i campi obbligatori.');return}
-  if(partenza<=arrivo){alert('La partenza deve essere dopo l'arrivo.');return}
+  if(partenza<=arrivo){alert('La partenza deve essere dopo l\'arrivo.');return}
   const p={
     id:document.getElementById('peid').value||uid(),
     nome,arrivo,partenza,num:+num,
