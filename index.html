@@ -662,14 +662,79 @@ function valS2(){
 }
 
 // ── S3: Firma ────────────────────────────────────────
+async function sendToIPad(){
+  const b=ci.bk;
+  const n=nights(b.arrivo,b.partenza);
+  showLdr('Invio a iPad…');
+  try{
+    await fetch(WORKER+'/save',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({key:'firma_session',data:{
+        status:'ready',
+        guestName:b.nome,
+        dates:'Arrivo '+fmtD(b.arrivo)+' · Partenza '+fmtD(b.partenza)+' · '+n+' notti',
+        bookingId:b.id,
+        guestEmail:b.email||'',
+      }})
+    });
+    hideLdr();
+    // Poll for completion
+    alert('✅ Sessione inviata all\'iPad!\n\nL\'ospite può ora firmare. Quando avrà completato entrambe le firme, tocca "Controlla firme" per continuare.');
+    // Start polling for signed status
+    pollForSignature();
+  }catch(e){
+    hideLdr();
+    alert('Errore invio iPad: '+e.message);
+  }
+}
+
+function pollForSignature(){
+  const btn = document.getElementById('btn-check-sig');
+  if(btn) btn.style.display='flex';
+}
+
+async function checkSignature(){
+  showLdr('Verifica firme…');
+  try{
+    const r=await fetch(WORKER+'/load?key=firma_session');
+    const data=await r.json();
+    hideLdr();
+    if(data && data.status==='signed'){
+      ci.firmaContratto = data.firmaContratto;
+      ci.firmaPrivacy = data.firmaPrivacy;
+      ci.sig = data.firmaContratto; // use contratto sig as main
+      nx(4);
+    } else {
+      alert('Le firme non sono ancora state completate. Attendi che l\'ospite finisca.');
+    }
+  }catch(e){
+    hideLdr();
+    alert('Errore verifica: '+e.message);
+  }
+}
+
 function s3(){
   document.getElementById('ci-body').innerHTML=`
     <div class="sec">
-      <div class="sec-ttl"><div><span class="sec-eyebrow">Passo 3 di 4</span>Firma dell'intestatario</div></div>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-style:italic">Fai firmare ${ci.bk.nome} con il dito sullo spazio sottostante.</p>
+      <div class="sec-ttl"><div><span class="sec-eyebrow">Passo 3 di 4</span>Firma documenti</div></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Scegli come far firmare <strong>${ci.bk.nome}</strong>:</p>
+      
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+        <button class="btn btn-olive" onclick="sendToIPad()" style="gap:10px">
+          📱 Invia all'iPad · firma lì
+        </button>
+        <div id="btn-check-sig" style="display:none">
+          <button class="btn btn-gold" onclick="checkSignature()" style="width:100%">
+            ✓ Controlla firme iPad
+          </button>
+        </div>
+      </div>
+
+      <div class="sep"><span>oppure firma qui</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;margin-top:12px">Firma direttamente su questo schermo:</p>
       <canvas id="firma-cv"></canvas>
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
-        <button class="btn btn-ghost btn-sm" onclick="clrSig()">🗑 Cancella firma</button>
+        <button class="btn btn-ghost btn-sm" onclick="clrSig()">🗑 Cancella</button>
       </div>
     </div>`;
   initSig();
