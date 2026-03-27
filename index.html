@@ -1195,12 +1195,16 @@ const fmtMonth=mk=>{const[y,m]=mk.split('-');const N=['','Gennaio','Febbraio','M
 
 // ── SECTION NAVIGATION ──────────────────────────────
 function showSection(type){
-  if(type==='prenotazioni'){
-    renderPren();
-    showScr('screen-pren');
-  } else {
-    renderListCI();
-    showScr('screen-list-ci');
+  try{
+    if(type==='prenotazioni'){
+      renderPren();
+      showScr('screen-pren');
+    } else {
+      renderListCI();
+      showScr('screen-list-ci');
+    }
+  }catch(e){
+    alert('Errore: '+e.message+' — '+e.stack.slice(0,200));
   }
 }
 
