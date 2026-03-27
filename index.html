@@ -550,6 +550,7 @@ h1,h2,h3,.ttl{font-family:'Raleway',sans-serif;font-weight:400}
         <label>Importo tassa (€)</label>
         <input type="number" id="pimporto" placeholder="es. 14.00" step="0.50" min="0">
       </div>
+      <div class="field"><label>Nazionalità ospiti</label><input type="text" id="pnaz" placeholder="es. Italiana, Tedesca…" autocomplete="off"></div>
       <div class="field"><label>Note operative</label><input type="text" id="pnote" placeholder="es. letto aggiunto, allergie…"></div>
       <div class="btn-grp">
         <button class="btn btn-olive" onclick="savePren()">Salva prenotazione</button>
@@ -1224,6 +1225,7 @@ function renderPren(){
         </div>
         <div class="pren-card-body">
           <div class="pren-row"><span>Ospiti</span><strong>${p.num}</strong></div>
+          <div class="pren-row"><span>Nazionalità</span><strong>${p.naz||'—'}</strong></div>
           <div class="pren-row"><span>Orario arrivo</span><strong>${p.orario||'—'}</strong></div>
           <div class="pren-row"><span>Telefono</span><strong>${p.tel||'—'}</strong></div>
           <div class="pren-row"><span>Email</span><strong style="font-size:12px">${p.email||'—'}</strong></div>
@@ -1244,7 +1246,7 @@ function renderPren(){
 function openAddPren(){
   document.getElementById('modal-pren-ttl').textContent='Nuova prenotazione';
   document.getElementById('peid').value='';
-  ['pn','ptel','pemail','pnote','pimporto'].forEach(id=>document.getElementById(id).value='');
+  ['pn','ptel','pemail','pnote','pimporto','pnaz'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('po').value='';
   document.getElementById('ptassa').value='';
   document.getElementById('ph').value='';
@@ -1273,6 +1275,7 @@ function editPren(id){
   document.getElementById('pemail').value=p.email||'';
   document.getElementById('ptassa').value=p.tassa||'';
   document.getElementById('pimporto').value=p.importo||'';
+  document.getElementById('pnaz').value=p.naz||'';
   document.getElementById('pnote').value=p.note||'';
   document.getElementById('ptassa-importo-wrap').style.display=p.tassa==='da pagare'?'block':'none';
   document.getElementById('pdel-row').style.display='block';
@@ -1300,6 +1303,7 @@ function savePren(){
     email:document.getElementById('pemail').value.trim(),
     tassa:document.getElementById('ptassa').value,
     importo:document.getElementById('pimporto').value,
+    naz:document.getElementById('pnaz').value.trim(),
     note:document.getElementById('pnote').value.trim(),
   };
   const pren=lPK();
