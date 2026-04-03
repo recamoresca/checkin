@@ -1542,6 +1542,13 @@ function renderDash(){
         <div class="kpi-label">Previsto a fine stagione</div>
         <div class="kpi-value" style="font-size:20px">€ ${fmt(incassoPrevisto)}</div>
       </div>
+      <div class="kpi full">
+        <div class="kpi-label">ADR — Tariffa media giornaliera</div>
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <div class="kpi-value" style="font-size:28px">€ ${bookedNights > 0 ? fmt(incassoPrevisto / bookedNights) : '—'}</div>
+          <div class="kpi-sub">per notte prenotata</div>
+        </div>
+      </div>
     </div>
 
     <!-- Tasse soggiorno -->
