@@ -769,7 +769,10 @@ async function sendToIPad(){
   }
 }
 
-function pollForSignature(){}
+function pollForSignature(){
+  const btn = document.getElementById('btn-check-sig');
+  if(btn) btn.style.display='flex';
+}
 
 async function checkSignature(){
   showLdr('Verifica firme…');
@@ -798,12 +801,14 @@ function s3(){
       <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Scegli come far firmare <strong>${ci.bk.nome}</strong>:</p>
       
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-        <button class="btn btn-olive" onclick="sendToIPad()">
+        <button class="btn btn-olive" onclick="sendToIPad()" style="gap:10px">
           📱 Invia all'iPad · firma lì
         </button>
-        <button class="btn btn-gold" onclick="checkSignature()">
-          ✓ Controlla firme iPad
-        </button>
+        <div id="btn-check-sig" style="display:none">
+          <button class="btn btn-gold" onclick="checkSignature()" style="width:100%">
+            ✓ Controlla firme iPad
+          </button>
+        </div>
       </div>
 
       <div class="sep"><span>oppure firma qui</span></div>
@@ -858,7 +863,11 @@ function s4(){
         <span class="tag tgo">✓ Firma acquisita</span>
       </div>
     </div>
-    <input type="hidden" id="eml" value="pierpaolo.presta@gmail.com">`;
+    <div class="sec">
+      <div class="sec-ttl"><div><span class="sec-eyebrow">Destinatario</span>Invia a Paolo P.</div></div>
+      <div class="field"><label>Email *</label><input type="email" id="eml" placeholder="paolo@bnbcasamoresca.com"></div>
+      <div class="warn">Inserisci la tua email per ricevere i dati pronti per Octorate.</div>
+    </div>`;
   document.getElementById('ci-bar').innerHTML=`
     <button class="back-btn" onclick="nx(2)">←</button>
     <button class="btn btn-gold" style="flex:1" onclick="send()">📧 Invia dati →</button>`;
@@ -1078,7 +1087,7 @@ function blankCv(c){return!c.getContext('2d').getImageData(0,0,c.width,c.height)
 // ── SEND ─────────────────────────────────────────────
 async function send(){
   const email=document.getElementById('eml')?.value.trim();
-  // email hardcoded
+  if(!email||!email.includes('@')){alert('Inserisci un indirizzo email valido.');return}
   showLdr('Invio dati in corso…');
   const b=ci.bk,n=nights(b.arrivo,b.partenza),txt=buildTxt(n);
   try{
@@ -1665,11 +1674,9 @@ function attachTileEvents(){
     tileCi.addEventListener('click', function(e){ e.preventDefault(); showSection('checkin'); });
     tileCi.addEventListener('touchend', function(e){ e.preventDefault(); showSection('checkin'); });
   }
-  var dashPill = document.getElementById('dash-pill');
-  if(dashPill){
+  document.querySelectorAll('#dash-pill').forEach(function(dashPill){
     dashPill.addEventListener('click', function(e){ e.preventDefault(); openDash(); });
-    dashPill.addEventListener('touchend', function(e){ e.preventDefault(); openDash(); });
-  }
+  });
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', attachTileEvents);
