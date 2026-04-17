@@ -282,9 +282,17 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
         <input class="token-input" type="text" id="igUserId" value="17841400924386592" />
       </div>
       <div class="field-group">
-        <label class="field-label">imgbb API Key</label>
-        <input class="token-input" type="password" id="imgbbKey" placeholder="chiave API imgbb..." />
-        <p class="hint-text">Trovala su imgbb.com → Account → API</p>
+        <label class="field-label">Cloudinary Cloud Name</label>
+        <input class="token-input" type="text" id="cloudinaryCloud" placeholder="es. my-cloud" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Cloudinary API Key</label>
+        <input class="token-input" type="text" id="cloudinaryKey" placeholder="123456789012345" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Cloudinary API Secret</label>
+        <input class="token-input" type="password" id="cloudinarySecret" placeholder="API Secret..." />
+        <p class="hint-text">Trovali su cloudinary.com → Dashboard → API Keys</p>
       </div>
       <button class="btn" onclick="saveSettings()">Salva impostazioni</button>
       <div id="settingsStatus" class="status-bar"></div>
@@ -306,7 +314,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     <div class="tab-row">
       <button class="tab active" id="tabUploadBtn" onclick="switchTab('upload')">Upload</button>
       <button class="tab" id="tabUrlBtn" onclick="switchTab('url')">Da URL</button>
-      <button class="tab" id="tabImgbbBtn" onclick="switchTab('imgbb')">📸 imgbb</button>
+      <button class="tab" id="tabCloudinaryBtn" onclick="switchTab('cloudinary')">☁️ Galleria</button>
     </div>
 
     <div id="tabUpload">
@@ -324,20 +332,18 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
       <input type="url" id="imageUrl" placeholder="https://... URL pubblico dell'immagine" oninput="loadFromUrl()" />
       <p class="hint-text">L'immagine deve essere pubblicamente accessibile.</p>
     </div>
-    <div id="tabImgbb" style="display:none">
+    <div id="tabCloudinary" style="display:none">
       <div class="imgbb-toolbar">
-        <label class="btn btn-ai" style="cursor:pointer">
-          <span id="imgbbUploadSpinner" style="display:none" class="spinner"></span>
-          + Aggiungi foto
-          <input type="file" id="imgbbFileInput" accept="image/*" style="display:none" onchange="uploadToImgbbGallery(event)" />
-        </label>
-        <button class="btn" onclick="clearImgbbGallery()" style="font-size:11px;padding:4px 8px">Svuota</button>
-        <span id="imgbbCount" class="hint-text"></span>
+        <button class="btn btn-ai" onclick="loadCloudinaryGallery()">
+          <span id="cloudinarySpinner" style="display:none" class="spinner"></span>
+          Carica galleria
+        </button>
+        <span id="cloudinaryCount" class="hint-text"></span>
       </div>
-      <div class="imgbb-grid" id="imgbbGrid">
-        <p class="imgbb-empty">Aggiungi foto per costruire la tua galleria</p>
+      <div class="imgbb-grid" id="cloudinaryGrid">
+        <p class="imgbb-empty">Clicca "Carica galleria" per vedere le tue foto</p>
       </div>
-      <div class="status-bar" id="imgbbStatus"></div>
+      <div class="status-bar" id="cloudinaryStatus"></div>
     </div>
 
     <div id="previewArea">
@@ -482,18 +488,24 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     const t = localStorage.getItem('cm_ig_token');
     const k = localStorage.getItem('cm_anthropic_key');
     const u = localStorage.getItem('cm_ig_userid');
-    const ib = localStorage.getItem('cm_imgbb_key');
+    const cc = localStorage.getItem('cm_cloudinary_cloud');
+    const ck = localStorage.getItem('cm_cloudinary_key');
+    const cs = localStorage.getItem('cm_cloudinary_secret');
     if (t) document.getElementById('igToken').value = t;
     if (k) document.getElementById('anthropicKey').value = k;
     if (u) document.getElementById('igUserId').value = u;
-    if (ib) document.getElementById('imgbbKey').value = ib;
+    if (cc) document.getElementById('cloudinaryCloud').value = cc;
+    if (ck) document.getElementById('cloudinaryKey').value = ck;
+    if (cs) document.getElementById('cloudinarySecret').value = cs;
   }
 
   function saveSettings() {
     localStorage.setItem('cm_ig_token', document.getElementById('igToken').value.trim());
     localStorage.setItem('cm_anthropic_key', document.getElementById('anthropicKey').value.trim());
     localStorage.setItem('cm_ig_userid', document.getElementById('igUserId').value.trim());
-    localStorage.setItem('cm_imgbb_key', document.getElementById('imgbbKey').value.trim());
+    localStorage.setItem('cm_cloudinary_cloud', document.getElementById('cloudinaryCloud').value.trim());
+    localStorage.setItem('cm_cloudinary_key', document.getElementById('cloudinaryKey').value.trim());
+    localStorage.setItem('cm_cloudinary_secret', document.getElementById('cloudinarySecret').value.trim());
     showStatus('settingsStatus', 'Impostazioni salvate', 'success');
   }
 
@@ -503,78 +515,67 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   }
 
   function switchTab(tab) {
-    ['upload','url','imgbb'].forEach(t => {
+    ['upload','url','cloudinary'].forEach(t => {
       const panel = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
       if (panel) panel.style.display = t === tab ? 'block' : 'none';
       const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
       if (btn) btn.classList.toggle('active', t === tab);
     });
-    if (tab === 'imgbb') loadImgbbGallery();
   }
 
-  function loadImgbbGallery() {
-    const stored = JSON.parse(localStorage.getItem('cm_imgbb_gallery') || '[]');
-    const grid = document.getElementById('imgbbGrid');
-    if (!stored.length) {
-      grid.innerHTML = '<p class="imgbb-empty">Aggiungi foto per costruire la tua galleria</p>';
-      document.getElementById('imgbbCount').textContent = '';
+  async function loadCloudinaryGallery() {
+    const cloud = localStorage.getItem('cm_cloudinary_cloud') || document.getElementById('cloudinaryCloud').value.trim();
+    const key   = localStorage.getItem('cm_cloudinary_key')   || document.getElementById('cloudinaryKey').value.trim();
+    const secret= localStorage.getItem('cm_cloudinary_secret')|| document.getElementById('cloudinarySecret').value.trim();
+    if (!cloud || !key || !secret) {
+      showStatus('cloudinaryStatus', 'Inserisci Cloud Name, API Key e API Secret nelle impostazioni', 'error');
       return;
     }
-    grid.innerHTML = stored.map((img, i) => `
-      <div class="imgbb-thumb" onclick="selectImgbbPhoto('${img.url}', this)" title="${img.name || ''}">
-        <img src="${img.thumb || img.url}" loading="lazy" />
-        <button class="imgbb-del" onclick="deleteImgbbPhoto(event,${i})" title="Rimuovi">×</button>
-      </div>`).join('');
-    document.getElementById('imgbbCount').textContent = `${stored.length} foto`;
-  }
-
-  async function uploadToImgbbGallery(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const apiKey = document.getElementById('imgbbKey').value.trim() || localStorage.getItem('cm_imgbb_key');
-    if (!apiKey) { showStatus('imgbbStatus', 'Inserisci la imgbb API Key nelle impostazioni', 'error'); return; }
-    document.getElementById('imgbbUploadSpinner').style.display = 'inline-block';
-    showStatus('imgbbStatus', 'Caricamento in corso...', 'info');
+    document.getElementById('cloudinarySpinner').style.display = 'inline-block';
+    document.getElementById('cloudinaryCount').textContent = '';
+    showStatus('cloudinaryStatus', '', '');
     try {
-      const base64 = await new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = ev => res(ev.target.result.split(',')[1]);
-        r.onerror = rej;
-        r.readAsDataURL(file);
-      });
-      const fd = new FormData();
-      fd.append('key', apiKey);
-      fd.append('image', base64);
-      fd.append('name', file.name.replace(/\.[^.]+$/, ''));
-      const resp = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
-      const data = await resp.json();
-      if (!data.success) throw new Error(data.error?.message || 'Upload fallito');
-      const img = data.data;
-      const stored = JSON.parse(localStorage.getItem('cm_imgbb_gallery') || '[]');
-      stored.unshift({ url: img.url, thumb: img.thumb?.url || img.medium?.url || img.url, name: img.title });
-      localStorage.setItem('cm_imgbb_gallery', JSON.stringify(stored));
-      loadImgbbGallery();
-      showStatus('imgbbStatus', '✓ Foto aggiunta alla galleria', 'success');
-    } catch(err) {
-      showStatus('imgbbStatus', 'Errore: ' + err.message, 'error');
+      const creds = btoa(`${key}:${secret}`);
+      let resources = [], nextCursor = null;
+      do {
+        const url = `https://api.cloudinary.com/v1_1/${cloud}/resources/image?max_results=100${nextCursor ? '&next_cursor=' + nextCursor : ''}`;
+        const res = await fetch(url, { headers: { 'Authorization': `Basic ${creds}` } });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        resources = resources.concat(data.resources || []);
+        nextCursor = data.next_cursor || null;
+      } while (nextCursor && resources.length < 500);
+
+      const grid = document.getElementById('cloudinaryGrid');
+      if (!resources.length) {
+        grid.innerHTML = '<p class="imgbb-empty">Nessuna foto trovata su Cloudinary</p>';
+        return;
+      }
+      grid.innerHTML = resources.map(r => {
+        const thumb = `https://res.cloudinary.com/${cloud}/image/upload/w_200,h_200,c_fill/${r.public_id}.jpg`;
+        const full  = r.secure_url;
+        const name  = r.public_id.split('/').pop();
+        return `<div class="imgbb-thumb" onclick="selectCloudinaryPhoto('${full}', this)" title="${name}">
+          <img src="${thumb}" loading="lazy" />
+        </div>`;
+      }).join('');
+      document.getElementById('cloudinaryCount').textContent = `${resources.length} foto`;
+    } catch(e) {
+      showStatus('cloudinaryStatus', 'Errore: ' + e.message, 'error');
     } finally {
-      document.getElementById('imgbbUploadSpinner').style.display = 'none';
-      e.target.value = '';
+      document.getElementById('cloudinarySpinner').style.display = 'none';
     }
   }
 
-  function deleteImgbbPhoto(e, idx) {
-    e.stopPropagation();
-    const stored = JSON.parse(localStorage.getItem('cm_imgbb_gallery') || '[]');
-    stored.splice(idx, 1);
-    localStorage.setItem('cm_imgbb_gallery', JSON.stringify(stored));
-    loadImgbbGallery();
-  }
-
-  function clearImgbbGallery() {
-    if (!confirm('Svuotare la galleria locale? Le foto su imgbb.com restano invariate.')) return;
-    localStorage.removeItem('cm_imgbb_gallery');
-    loadImgbbGallery();
+  function selectCloudinaryPhoto(url, el) {
+    document.querySelectorAll('.imgbb-thumb').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    currentImageUrl = url;
+    window._uploadedDataUrl = null;
+    document.getElementById('previewArea').innerHTML = `<img class="preview-img" src="${url}" />`;
   }
 
   function selectImgbbPhoto(url, el) {
