@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Casa Moresca — Instagram Publisher</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
-<style>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"><style>
 :root{
   --calce:#F8F5F0;--calce-2:#F0EBE3;--border:#DDD5C8;
   --olive:#5C7A52;--olive-lt:#E8F0E5;
@@ -282,14 +281,14 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
         <input class="token-input" type="text" id="igUserId" value="17841400924386592" />
       </div>
       <div class="field-group">
-        <label class="field-label">Cloudinary Cloud Name</label>
-        <input class="token-input" type="text" id="cloudinaryCloud" placeholder="es. my-cloud" />
-        <p class="hint-text">Trovala su cloudinary.com → Dashboard</p>
+        <label class="field-label">Google Drive API Key</label>
+        <input class="token-input" type="password" id="driveApiKey" placeholder="AIza..." />
+        <p class="hint-text">console.cloud.google.com → Abilita Drive API → Crea API Key</p>
       </div>
       <div class="field-group">
-        <label class="field-label">Cloudinary Tag galleria</label>
-        <input class="token-input" type="text" id="cloudinaryTag" placeholder="instagram" value="instagram" />
-        <p class="hint-text">Tag da usare per filtrare le foto. Abilita "Resource list" in Cloudinary → Settings → Security.</p>
+        <label class="field-label">Google Drive Folder ID</label>
+        <input class="token-input" type="text" id="driveFolderId" value="1_71G45_ygTA1DvkuXvw8XyB5I3lY_SjU" />
+        <p class="hint-text">La cartella deve essere condivisa "Chiunque abbia il link"</p>
       </div>
       <button class="btn" onclick="saveSettings()">Salva impostazioni</button>
       <div id="settingsStatus" class="status-bar"></div>
@@ -311,7 +310,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     <div class="tab-row">
       <button class="tab active" id="tabUploadBtn" onclick="switchTab('upload')">Upload</button>
       <button class="tab" id="tabUrlBtn" onclick="switchTab('url')">Da URL</button>
-      <button class="tab" id="tabCloudinaryBtn" onclick="switchTab('cloudinary')">☁️ Galleria</button>
+      <button class="tab" id="tabDriveBtn" onclick="switchTab('drive')">📁 Galleria</button>
     </div>
 
     <div id="tabUpload">
@@ -329,18 +328,18 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
       <input type="url" id="imageUrl" placeholder="https://... URL pubblico dell'immagine" oninput="loadFromUrl()" />
       <p class="hint-text">L'immagine deve essere pubblicamente accessibile.</p>
     </div>
-    <div id="tabCloudinary" style="display:none">
+    <div id="tabDrive" style="display:none">
       <div class="imgbb-toolbar">
-        <button class="btn btn-ai" onclick="loadCloudinaryGallery()">
-          <span id="cloudinarySpinner" style="display:none" class="spinner"></span>
+        <button class="btn btn-ai" onclick="loadDriveGallery()">
+          <span id="driveSpinner" style="display:none" class="spinner"></span>
           Carica galleria
         </button>
-        <span id="cloudinaryCount" class="hint-text"></span>
+        <span id="driveCount" class="hint-text"></span>
       </div>
-      <div class="imgbb-grid" id="cloudinaryGrid">
+      <div class="imgbb-grid" id="driveGrid">
         <p class="imgbb-empty">Clicca "Carica galleria" per vedere le tue foto</p>
       </div>
-      <div class="status-bar" id="cloudinaryStatus"></div>
+      <div class="status-bar" id="driveStatus"></div>
     </div>
 
     <div id="previewArea">
@@ -482,24 +481,24 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   ];
 
   function loadSettings() {
-    const t = localStorage.getItem('cm_ig_token');
-    const k = localStorage.getItem('cm_anthropic_key');
-    const u = localStorage.getItem('cm_ig_userid');
-    const cc = localStorage.getItem('cm_cloudinary_cloud');
-    const ct = localStorage.getItem('cm_cloudinary_tag');
-    if (t) document.getElementById('igToken').value = t;
-    if (k) document.getElementById('anthropicKey').value = k;
-    if (u) document.getElementById('igUserId').value = u;
-    if (cc) document.getElementById('cloudinaryCloud').value = cc;
-    if (ct) document.getElementById('cloudinaryTag').value = ct;
+    const t  = localStorage.getItem('cm_ig_token');
+    const k  = localStorage.getItem('cm_anthropic_key');
+    const u  = localStorage.getItem('cm_ig_userid');
+    const dk = localStorage.getItem('cm_drive_api_key');
+    const df = localStorage.getItem('cm_drive_folder_id');
+    if (t)  document.getElementById('igToken').value = t;
+    if (k)  document.getElementById('anthropicKey').value = k;
+    if (u)  document.getElementById('igUserId').value = u;
+    if (dk) document.getElementById('driveApiKey').value = dk;
+    if (df) document.getElementById('driveFolderId').value = df;
   }
 
   function saveSettings() {
-    localStorage.setItem('cm_ig_token', document.getElementById('igToken').value.trim());
-    localStorage.setItem('cm_anthropic_key', document.getElementById('anthropicKey').value.trim());
-    localStorage.setItem('cm_ig_userid', document.getElementById('igUserId').value.trim());
-    localStorage.setItem('cm_cloudinary_cloud', document.getElementById('cloudinaryCloud').value.trim());
-    localStorage.setItem('cm_cloudinary_tag', document.getElementById('cloudinaryTag').value.trim() || 'instagram');
+    localStorage.setItem('cm_ig_token',        document.getElementById('igToken').value.trim());
+    localStorage.setItem('cm_anthropic_key',   document.getElementById('anthropicKey').value.trim());
+    localStorage.setItem('cm_ig_userid',       document.getElementById('igUserId').value.trim());
+    localStorage.setItem('cm_drive_api_key',   document.getElementById('driveApiKey').value.trim());
+    localStorage.setItem('cm_drive_folder_id', document.getElementById('driveFolderId').value.trim());
     showStatus('settingsStatus', 'Impostazioni salvate', 'success');
   }
 
@@ -509,7 +508,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   }
 
   function switchTab(tab) {
-    ['upload','url','cloudinary'].forEach(t => {
+    ['upload','url','drive'].forEach(t => {
       const panel = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
       if (panel) panel.style.display = t === tab ? 'block' : 'none';
       const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
@@ -517,45 +516,48 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     });
   }
 
-  async function loadCloudinaryGallery() {
-    const cloud = document.getElementById('cloudinaryCloud').value.trim() || localStorage.getItem('cm_cloudinary_cloud');
-    const tag   = document.getElementById('cloudinaryTag').value.trim()   || localStorage.getItem('cm_cloudinary_tag') || 'instagram';
-    if (!cloud) {
-      showStatus('cloudinaryStatus', 'Inserisci il Cloud Name nelle impostazioni', 'error');
-      return;
-    }
-    document.getElementById('cloudinarySpinner').style.display = 'inline-block';
-    document.getElementById('cloudinaryCount').textContent = '';
-    showStatus('cloudinaryStatus', '', '');
+  async function loadDriveGallery() {
+    const apiKey   = document.getElementById('driveApiKey').value.trim()   || localStorage.getItem('cm_drive_api_key');
+    const folderId = document.getElementById('driveFolderId').value.trim() || localStorage.getItem('cm_drive_folder_id');
+    if (!apiKey)   { showStatus('driveStatus', 'Inserisci la Google Drive API Key nelle impostazioni', 'error'); return; }
+    if (!folderId) { showStatus('driveStatus', 'Inserisci il Folder ID nelle impostazioni', 'error'); return; }
+    document.getElementById('driveSpinner').style.display = 'inline-block';
+    document.getElementById('driveCount').textContent = '';
+    showStatus('driveStatus', '', '');
     try {
-      const url = `https://res.cloudinary.com/${cloud}/image/list/${tag}.json`;
-      const res = await fetch(url);
-      if (res.status === 404) throw new Error(`Nessuna foto con tag "${tag}", o "Resource list" non abilitato in Cloudinary → Settings → Security`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const resources = data.resources || [];
-      const grid = document.getElementById('cloudinaryGrid');
-      if (!resources.length) {
-        grid.innerHTML = `<p class="imgbb-empty">Nessuna foto con tag "${tag}"</p>`;
-        return;
-      }
-      grid.innerHTML = resources.map(r => {
-        const thumb = `https://res.cloudinary.com/${cloud}/image/upload/w_200,h_200,c_fill/${r.public_id}.${r.format}`;
-        const full  = `https://res.cloudinary.com/${cloud}/image/upload/${r.public_id}.${r.format}`;
-        const name  = r.public_id.split('/').pop();
-        return `<div class="imgbb-thumb" onclick="selectCloudinaryPhoto('${full}', this)" title="${name}">
+      let files = [], pageToken = null;
+      do {
+        const q = encodeURIComponent(`'${folderId}' in parents and mimeType contains 'image/' and trashed=false`);
+        const pt = pageToken ? `&pageToken=${pageToken}` : '';
+        const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=nextPageToken,files(id,name)&pageSize=100&key=${apiKey}${pt}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        files = files.concat(data.files || []);
+        pageToken = data.nextPageToken || null;
+      } while (pageToken && files.length < 500);
+
+      const grid = document.getElementById('driveGrid');
+      if (!files.length) { grid.innerHTML = '<p class="imgbb-empty">Nessuna foto trovata nella cartella</p>'; return; }
+      grid.innerHTML = files.map(f => {
+        const thumb = `https://drive.google.com/thumbnail?id=${f.id}&sz=w200-h200`;
+        const full  = `https://drive.google.com/uc?export=view&id=${f.id}`;
+        return `<div class="imgbb-thumb" onclick="selectDrivePhoto('${full}', this)" title="${f.name}">
           <img src="${thumb}" loading="lazy" />
         </div>`;
       }).join('');
-      document.getElementById('cloudinaryCount').textContent = `${resources.length} foto`;
+      document.getElementById('driveCount').textContent = `${files.length} foto`;
     } catch(e) {
-      showStatus('cloudinaryStatus', 'Errore: ' + e.message, 'error');
+      showStatus('driveStatus', 'Errore: ' + e.message, 'error');
     } finally {
-      document.getElementById('cloudinarySpinner').style.display = 'none';
+      document.getElementById('driveSpinner').style.display = 'none';
     }
   }
 
-  function selectCloudinaryPhoto(url, el) {
+  function selectDrivePhoto(url, el) {
     document.querySelectorAll('.imgbb-thumb').forEach(t => t.classList.remove('selected'));
     el.classList.add('selected');
     currentImageUrl = url;
