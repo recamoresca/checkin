@@ -241,6 +241,8 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 .imgbb-thumb.selected{border-color:var(--arch);box-shadow:0 0 0 2px var(--arch)}
 .imgbb-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .imgbb-empty{font-size:12px;color:var(--muted);text-align:center;padding:2rem;grid-column:1/-1}
+.imgbb-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:12px;line-height:18px;text-align:center;cursor:pointer;padding:0;display:none}
+.imgbb-thumb:hover .imgbb-del{display:block}
 
 </style>
 </head>
@@ -324,14 +326,16 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     </div>
     <div id="tabImgbb" style="display:none">
       <div class="imgbb-toolbar">
-        <button class="btn btn-ai" onclick="loadImgbbGallery()">
-          <span id="imgbbSpinner" style="display:none" class="spinner"></span>
-          Carica galleria
-        </button>
+        <label class="btn btn-ai" style="cursor:pointer">
+          <span id="imgbbUploadSpinner" style="display:none" class="spinner"></span>
+          + Aggiungi foto
+          <input type="file" id="imgbbFileInput" accept="image/*" style="display:none" onchange="uploadToImgbbGallery(event)" />
+        </label>
+        <button class="btn" onclick="clearImgbbGallery()" style="font-size:11px;padding:4px 8px">Svuota</button>
         <span id="imgbbCount" class="hint-text"></span>
       </div>
       <div class="imgbb-grid" id="imgbbGrid">
-        <p class="imgbb-empty">Clicca "Carica galleria" per vedere le tue foto imgbb</p>
+        <p class="imgbb-empty">Aggiungi foto per costruire la tua galleria</p>
       </div>
       <div class="status-bar" id="imgbbStatus"></div>
     </div>
@@ -505,30 +509,72 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
       const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
       if (btn) btn.classList.toggle('active', t === tab);
     });
+    if (tab === 'imgbb') loadImgbbGallery();
   }
 
-  async function loadImgbbGallery() {
-    const apiKey = document.getElementById('imgbbKey').value.trim();
-    if (!apiKey) { showStatus('imgbbStatus', 'Inserisci la imgbb API Key nelle impostazioni', 'error'); return; }
-    document.getElementById('imgbbSpinner').style.display = 'inline-block';
-    document.getElementById('imgbbCount').textContent = '';
-    try {
-      const res = await fetch(`https://api.imgbb.com/1/account/images?key=${apiKey}&page=1&per_page=100`);
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error?.message || 'Errore API imgbb');
-      const images = data.data || [];
-      const grid = document.getElementById('imgbbGrid');
-      if (!images.length) { grid.innerHTML = '<p class="imgbb-empty">Nessuna foto trovata</p>'; return; }
-      grid.innerHTML = images.map(img => `
-        <div class="imgbb-thumb" onclick="selectImgbbPhoto('${img.image.url}', this)" title="${img.title || ''}">
-          <img src="${img.thumb?.url || img.image.url}" loading="lazy" />
-        </div>`).join('');
-      document.getElementById('imgbbCount').textContent = `${images.length} foto`;
-    } catch(e) {
-      showStatus('imgbbStatus', 'Errore: ' + e.message, 'error');
-    } finally {
-      document.getElementById('imgbbSpinner').style.display = 'none';
+  function loadImgbbGallery() {
+    const stored = JSON.parse(localStorage.getItem('cm_imgbb_gallery') || '[]');
+    const grid = document.getElementById('imgbbGrid');
+    if (!stored.length) {
+      grid.innerHTML = '<p class="imgbb-empty">Aggiungi foto per costruire la tua galleria</p>';
+      document.getElementById('imgbbCount').textContent = '';
+      return;
     }
+    grid.innerHTML = stored.map((img, i) => `
+      <div class="imgbb-thumb" onclick="selectImgbbPhoto('${img.url}', this)" title="${img.name || ''}">
+        <img src="${img.thumb || img.url}" loading="lazy" />
+        <button class="imgbb-del" onclick="deleteImgbbPhoto(event,${i})" title="Rimuovi">×</button>
+      </div>`).join('');
+    document.getElementById('imgbbCount').textContent = `${stored.length} foto`;
+  }
+
+  async function uploadToImgbbGallery(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const apiKey = document.getElementById('imgbbKey').value.trim() || localStorage.getItem('cm_imgbb_key');
+    if (!apiKey) { showStatus('imgbbStatus', 'Inserisci la imgbb API Key nelle impostazioni', 'error'); return; }
+    document.getElementById('imgbbUploadSpinner').style.display = 'inline-block';
+    showStatus('imgbbStatus', 'Caricamento in corso...', 'info');
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = ev => res(ev.target.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+      const fd = new FormData();
+      fd.append('key', apiKey);
+      fd.append('image', base64);
+      fd.append('name', file.name.replace(/\.[^.]+$/, ''));
+      const resp = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
+      const data = await resp.json();
+      if (!data.success) throw new Error(data.error?.message || 'Upload fallito');
+      const img = data.data;
+      const stored = JSON.parse(localStorage.getItem('cm_imgbb_gallery') || '[]');
+      stored.unshift({ url: img.url, thumb: img.thumb?.url || img.medium?.url || img.url, name: img.title });
+      localStorage.setItem('cm_imgbb_gallery', JSON.stringify(stored));
+      loadImgbbGallery();
+      showStatus('imgbbStatus', '✓ Foto aggiunta alla galleria', 'success');
+    } catch(err) {
+      showStatus('imgbbStatus', 'Errore: ' + err.message, 'error');
+    } finally {
+      document.getElementById('imgbbUploadSpinner').style.display = 'none';
+      e.target.value = '';
+    }
+  }
+
+  function deleteImgbbPhoto(e, idx) {
+    e.stopPropagation();
+    const stored = JSON.parse(localStorage.getItem('cm_imgbb_gallery') || '[]');
+    stored.splice(idx, 1);
+    localStorage.setItem('cm_imgbb_gallery', JSON.stringify(stored));
+    loadImgbbGallery();
+  }
+
+  function clearImgbbGallery() {
+    if (!confirm('Svuotare la galleria locale? Le foto su imgbb.com restano invariate.')) return;
+    localStorage.removeItem('cm_imgbb_gallery');
+    loadImgbbGallery();
   }
 
   function selectImgbbPhoto(url, el) {
