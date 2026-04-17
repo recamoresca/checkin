@@ -625,32 +625,37 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
           max_tokens: 1000,
           messages: [{
             role: 'user',
-            content: `Sei il social media manager di Relais Casa Moresca, un relais di charme a Porto Badino, Terracina, sulla Riviera di Ulisse (Lazio, Italia).
+            content: `Sei il social media manager di Relais Casa Moresca, un relais di charme a Porto Badino, Terracina, sulla Riviera di Ulisse (Lazio).
 
 IDENTITÀ DEL BRAND:
-- Architettura moresca: tre grandi archi del Patio, intonaco a calce bianco, inserti in maiolica
-- 3 camere: Canfora, Catalpa, Paulonia (nominate dagli alberi del giardino)
-- Giardino privato 500mq: Tea Corner, Patio, area relax, piazzetta BBQ
+- Architettura moresca: tre grandi archi del Patio, calce bianca, inserti in maiolica
+- 3 camere: Canfora, Catalpa, Paulonia
+- Giardino privato 500mq con Tea Corner, Patio, area relax, BBQ
 - Spiaggia privata esclusiva (stabilimento Venerelli)
 - Escursioni alle Isole Pontine: Ponza, Ventotene, Palmarola
 - Vicino a Sabaudia, San Felice Circeo, Sperlonga
 - Prenotazioni su bnbcasamoresca.com
 
-STILE DEL POST:
-- Tono moderno, diretto, fresco — NON poetico, NON letterario
-- Inizia SEMPRE con un titolo breve in grassetto Unicode (usa ** intorno al titolo, es: **Colazione in giardino 🌿**)
-- Usa piccole emoji contestuali inline nel testo (☀️ 🌊 🌿 🍋 🏖️ 🛶 🌅 🍹 ✨ 📍 ecc.)
-- Frasi brevi, ritmo vivace, al massimo 2-3 righe di testo dopo il titolo
-- Chiudi con CTA semplice: "📍 bnbcasamoresca.com — link in bio"
+STILE DEI POST (segui ESATTAMENTE questo formato, è lo stile del profilo):
+1. Prima riga: 🇮🇹 TITOLO IN BOLD UNICODE MAIUSCOLO. ENGLISH TITLE TRANSLATION. + emoji contestuale
+2. Corpo in italiano: 2-3 frasi aspirazionali, tono raffinato e marketing (NON poetico). "esperienza indimenticabile", "rifugio di qualità", "comfort esclusivo", "privacy assoluta" ecc.
+3. CTA italiana: ➡️ [frase d'azione breve]. Link in Bio.
+4. Riga vuota, poi: 🇬🇧 corpo in inglese (traduzione del corpo IT, stessa lunghezza)
+5. CTA inglese: ➡️ [English action phrase]. Link in Bio.
+6. Eventuale: 💎 Salva questo post per ricordarti dove prenotare! / 💎 Save this post to remind yourself where to book!
+
+TITOLI: sempre MAIUSCOLI, usa ** intorno al testo per il bold Unicode (verranno convertiti automaticamente)
+
+${offerBlock ? "OFFERTA: quando c'è un'offerta, citala con urgency nel corpo del testo (sconto, scadenza, disponibilità limitate)." : ""}
 
 Crea una caption Instagram per questa scena: "${scene}"${offerBlock}
 
 Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
 {
-  "it": "**Titolo breve 🌿**\n\nTesto moderno 3-4 righe con emoji inline. Puoi aggiungere qualche dettaglio in più sulla scena o sull'offerta.\n\n📍 bnbcasamoresca.com — link in bio",
-  "en": "**Short title 🌿**\n\nModern text 2-3 lines with inline emoji.\n\n📍 bnbcasamoresca.com — link in bio",
-  "de": "**Kurzer Titel 🌿**\n\nModerner Text 2-3 Zeilen mit Emoji.\n\n📍 bnbcasamoresca.com — Link in Bio",
-  "hashtags": ["#casamoresca", "#relaiscastmoresca", "#terracina", "#portobadino", "#riviерadulisse", "#lazio", "#villaluxury", "#seaview", "#italyvacation", "#mediterraneo", "#vacanzeitalia", "#spiaggiaprivata", "#isoladiponza", "#italytravel", "#relaxitaly"]
+  "it": "🇮🇹 **TITOLO IT IN CAPS. ENGLISH TITLE.** 🏖️\n\nCorpo italiano 2-3 frasi aspirazionali.\n\n➡️ CTA italiana. Link in Bio.\n\n🇬🇧 English body 2-3 sentences.\n\n➡️ English CTA. Link in Bio.",
+  "en": "(stesso testo della caption it, è già bilingue)",
+  "de": "(stesso testo della caption it)",
+  "hashtags": ["#RelaisCasaMoresca", "#Terracina", "#Lazio", "#VacanzeEsclusive", "#LuxuryVilla", "#ItalyTravel", "#MediterraneanVibes", "#BoutiqueHotel", "#VisitLazio", "#Portobadino", "#RivieradiUlisse", "#VillaEsclusiva", "#ItaliaVacanza", "#EstateItaliana", "#DreamGetaway"]
 }`
           }]
         })
