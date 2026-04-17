@@ -597,7 +597,11 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
       });
 
       const data = await res.json();
-      const text = data.content[0].text.replace(/```json|```/g, '').trim();
+      const raw = data.content[0].text.replace(/```json|```/g, '').trim();
+      // sanitize literal control chars inside JSON string values
+      const text = raw.replace(/"((?:[^"\\]|\\[\s\S])*)"/g, (_,s) =>
+        '"' + s.replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t') + '"'
+      );
       const parsed = JSON.parse(text);
 
       document.getElementById('captionIt').value = parsed.it || '';
