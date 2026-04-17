@@ -498,6 +498,7 @@
       <span id="genSpinner" style="display:none" class="spinner"></span>
       Genera caption
     </button>
+    <div class="status-bar" id="captionStatus"></div>
 
     <div class="caption-area" id="captionArea">
       <div class="divider"></div>
@@ -659,12 +660,12 @@
 
   async function generateCaption() {
     const apiKey = document.getElementById('anthropicKey').value.trim();
-    if (!apiKey) { showStatus('statusBar', 'Inserisci la Anthropic API Key nelle impostazioni', 'error'); return; }
+    if (!apiKey) { showStatus('captionStatus', 'Inserisci la Anthropic API Key nelle impostazioni', 'error'); return; }
     const scene = document.getElementById('sceneDesc').value.trim() || 'foto del relais';
 
     const spinner = document.getElementById('genSpinner');
     spinner.style.display = 'inline-block';
-    showStatus('statusBar', 'Generazione caption AI in corso...', 'info');
+    showStatus('captionStatus', 'Generazione caption AI in corso...', 'info');
 
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -718,9 +719,9 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
 
       document.getElementById('captionArea').classList.add('visible');
       updateCharCount();
-      showStatus('statusBar', 'Caption generate in IT, EN e DE!', 'success');
+      showStatus('captionStatus', 'Caption generate in IT, EN e DE!', 'success');
     } catch (e) {
-      showStatus('statusBar', 'Errore nella generazione: ' + e.message, 'error');
+      showStatus('captionStatus', 'Errore nella generazione: ' + e.message, 'error');
     } finally {
       spinner.style.display = 'none';
     }
