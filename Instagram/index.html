@@ -229,6 +229,19 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 .video-url-area{margin-top:4px}
 .video-hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
 
+
+/* IMGBB GALLERY */
+.imgbb-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.imgbb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:320px;overflow-y:auto;border-radius:var(--r);padding:2px}
+.imgbb-thumb{
+  aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer;
+  border:2px solid transparent;transition:all .15s;position:relative;
+}
+.imgbb-thumb:hover{border-color:var(--arch-mid);transform:scale(1.02)}
+.imgbb-thumb.selected{border-color:var(--arch);box-shadow:0 0 0 2px var(--arch)}
+.imgbb-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.imgbb-empty{font-size:12px;color:var(--muted);text-align:center;padding:2rem;grid-column:1/-1}
+
 </style>
 </head>
 <body>
@@ -266,6 +279,11 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
         <label class="field-label">Instagram User ID</label>
         <input class="token-input" type="text" id="igUserId" value="17841400924386592" />
       </div>
+      <div class="field-group">
+        <label class="field-label">imgbb API Key</label>
+        <input class="token-input" type="password" id="imgbbKey" placeholder="chiave API imgbb..." />
+        <p class="hint-text">Trovala su imgbb.com → Account → API</p>
+      </div>
       <button class="btn" onclick="saveSettings()">Salva impostazioni</button>
       <div id="settingsStatus" class="status-bar"></div>
     </div>
@@ -301,7 +319,20 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 
     <div id="tabUrl" style="display:none">
       <input type="url" id="imageUrl" placeholder="https://... URL pubblico dell'immagine" oninput="loadFromUrl()" />
-      <p class="hint-text">L'immagine deve essere pubblicamente accessibile. Puoi usare imgbb.com per ottenere un URL diretto.</p>
+      <p class="hint-text">L'immagine deve essere pubblicamente accessibile.</p>
+    </div>
+    <div id="tabImgbb" style="display:none">
+      <div class="imgbb-toolbar">
+        <button class="btn btn-ai" onclick="loadImgbbGallery()">
+          <span id="imgbbSpinner" style="display:none" class="spinner"></span>
+          Carica galleria
+        </button>
+        <span id="imgbbCount" class="hint-text"></span>
+      </div>
+      <div class="imgbb-grid" id="imgbbGrid">
+        <p class="imgbb-empty">Clicca "Carica galleria" per vedere le tue foto imgbb</p>
+      </div>
+      <div class="status-bar" id="imgbbStatus"></div>
     </div>
 
     <div id="previewArea">
@@ -446,15 +477,18 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     const t = localStorage.getItem('cm_ig_token');
     const k = localStorage.getItem('cm_anthropic_key');
     const u = localStorage.getItem('cm_ig_userid');
+    const ib = localStorage.getItem('cm_imgbb_key');
     if (t) document.getElementById('igToken').value = t;
     if (k) document.getElementById('anthropicKey').value = k;
     if (u) document.getElementById('igUserId').value = u;
+    if (ib) document.getElementById('imgbbKey').value = ib;
   }
 
   function saveSettings() {
     localStorage.setItem('cm_ig_token', document.getElementById('igToken').value.trim());
     localStorage.setItem('cm_anthropic_key', document.getElementById('anthropicKey').value.trim());
     localStorage.setItem('cm_ig_userid', document.getElementById('igUserId').value.trim());
+    localStorage.setItem('cm_imgbb_key', document.getElementById('imgbbKey').value.trim());
     showStatus('settingsStatus', 'Impostazioni salvate', 'success');
   }
 
@@ -464,10 +498,44 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   }
 
   function switchTab(tab) {
-    document.getElementById('tabUpload').style.display = tab === 'upload' ? 'block' : 'none';
-    document.getElementById('tabUrl').style.display = tab === 'url' ? 'block' : 'none';
-    document.getElementById('tabUploadBtn').classList.toggle('active', tab === 'upload');
-    document.getElementById('tabUrlBtn').classList.toggle('active', tab === 'url');
+    ['upload','url','imgbb'].forEach(t => {
+      const panel = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (panel) panel.style.display = t === tab ? 'block' : 'none';
+      const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
+      if (btn) btn.classList.toggle('active', t === tab);
+    });
+  }
+
+  async function loadImgbbGallery() {
+    const apiKey = document.getElementById('imgbbKey').value.trim();
+    if (!apiKey) { showStatus('imgbbStatus', 'Inserisci la imgbb API Key nelle impostazioni', 'error'); return; }
+    document.getElementById('imgbbSpinner').style.display = 'inline-block';
+    document.getElementById('imgbbCount').textContent = '';
+    try {
+      const res = await fetch(`https://api.imgbb.com/1/account/images?key=${apiKey}&page=1&per_page=100`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error?.message || 'Errore API imgbb');
+      const images = data.data || [];
+      const grid = document.getElementById('imgbbGrid');
+      if (!images.length) { grid.innerHTML = '<p class="imgbb-empty">Nessuna foto trovata</p>'; return; }
+      grid.innerHTML = images.map(img => `
+        <div class="imgbb-thumb" onclick="selectImgbbPhoto('${img.image.url}', this)" title="${img.title || ''}">
+          <img src="${img.thumb?.url || img.image.url}" loading="lazy" />
+        </div>`).join('');
+      document.getElementById('imgbbCount').textContent = `${images.length} foto`;
+    } catch(e) {
+      showStatus('imgbbStatus', 'Errore: ' + e.message, 'error');
+    } finally {
+      document.getElementById('imgbbSpinner').style.display = 'none';
+    }
+  }
+
+  function selectImgbbPhoto(url, el) {
+    document.querySelectorAll('.imgbb-thumb').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    currentImageUrl = url;
+    window._uploadedDataUrl = null;
+    document.getElementById('previewArea').innerHTML = `<img class="preview-img" src="${url}" />`;
   }
 
   function switchPublishTab(tab) {
