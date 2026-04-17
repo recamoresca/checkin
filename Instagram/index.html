@@ -561,10 +561,11 @@
   let selectedHashtags = new Set();
 
   const defaultHashtags = [
-    '#casamoresca', '#relaiscastmoresca', '#terracina', '#portobadinot',
-    '#lazio', '#villaluxury', '#seaview', '#italyvacation', '#mediterraneo',
-    '#vacanzeitalia', '#villaaffitto', '#beachhouse', '#summervibes',
-    '#italytravel', '#relaxitaly'
+    '#casamoresca', '#relaiscastmoresca', '#terracina', '#portobadino',
+    '#riviераdulisse', '#lazio', '#villaluxury', '#seaview', '#italyvacation',
+    '#mediterraneo', '#vacanzeitalia', '#villaaffitto', '#beachhouse',
+    '#isoladiponza', '#italytravel', '#relaxitaly', '#villamediterranea',
+    '#giardino', '#luxuryvilla', '#sabaudia', '#spiaggiaprivata'
   ];
 
   function loadSettings() {
@@ -678,16 +679,27 @@
           max_tokens: 1000,
           messages: [{
             role: 'user',
-            content: `Sei il social media manager di Relais Casa Moresca, una villa vacanze esclusiva a Porto Badino, Terracina (Lazio, Italia). La villa ha una vista mare mozzafiato, piscina privata, terrazza panoramica e atmosfera mediterranea autentica. Le prenotazioni si fanno su bnbcasamoresca.com.
+            content: `Sei il social media manager di Relais Casa Moresca, un relais di charme a Porto Badino, Terracina, sulla Riviera di Ulisse (Lazio, Italia).
+
+IDENTITÀ DEL BRAND:
+- Architettura moresca: tre grandi archi del Patio, intonaco a calce bianco, inserti in maiolica
+- 3 camere con carattere proprio: Canfora, Catalpa, Paulonia (nominate dagli alberi del giardino)
+- Giardino privato di 500mq: Tea Corner, Patio, area relax con chaise-longue, piazzetta con barbecue
+- Spiaggia privata esclusiva (stabilimento Venerelli) con ombrellone e lettini riservati
+- Escursioni in barca alle Isole Pontine: Ponza, Ventotene, Palmarola
+- Vicinanza a Sabaudia, San Felice Circeo, Sperlonga
+- Prenotazioni su bnbcasamoresca.com
+
+TONO: elegante, evocativo, sensoriale. Usa un linguaggio che trasmette "rifugio di quiete e lusso", "oasi di relax", "atmosfera avvolgente". Mai promozionale o banale. Crea emozione, non elenca servizi.
 
 Crea una caption Instagram per questa scena: "${scene}"
 
 Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
 {
-  "it": "caption italiana evocativa (max 200 caratteri, con emoji, chiudi con call to action tipo 'Prenota su bnbcasamoresca.com 🔗 link in bio')",
-  "en": "English caption (max 200 chars, evocative, with emoji, end with booking CTA)",
-  "de": "Deutsche Caption (max 200 Zeichen, evokativ, mit Emoji, mit Buchungs-CTA)",
-  "hashtags": ["#casamoresca", "#terracina", "#portobadino", "#lazio", "#villaluxury", "#seaview", "#italyvacation", "#mediterraneo", "#vacanzeitalia", "#beachvilla", "#italytravel", "#relaxitaly"]
+  "it": "caption italiana evocativa (max 220 caratteri, con emoji appropriati, chiudi con CTA tipo 'Prenota su bnbcasamoresca.com ✨ link in bio')",
+  "en": "English caption (max 220 chars, evocative, with emoji, end with booking CTA)",
+  "de": "Deutsche Caption (max 220 Zeichen, evokativ, mit Emoji, mit Buchungs-CTA)",
+  "hashtags": ["#casamoresca", "#relaiscastmoresca", "#terracina", "#portobadino", "#riviерadulisse", "#lazio", "#villaluxury", "#seaview", "#italyvacation", "#mediterraneo", "#vacanzeitalia", "#spiaggiaprivata", "#isoladiponza", "#italytravel", "#relaxitaly"]
 }`
           }]
         })
