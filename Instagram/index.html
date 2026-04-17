@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa Moresca — Instagram Publisher</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sand: #F5F0E8;
+    --sand-dark: #E8E0D0;
+    --terracotta: #C4714A;
+    --terracotta-light: #E8A882;
+    --sea: #2A6B7C;
+    --sea-light: #4A9BAD;
+    --sea-pale: #E8F4F7;
+    --ink: #1A1A1A;
+    --ink-mid: #555;
+    --ink-light: #888;
+    --white: #FFFFFF;
+    --success: #2D7A4F;
+    --success-bg: #E8F5EE;
+    --error: #C0392B;
+    --error-bg: #FDF0EE;
+    --info-bg: #EEF6F9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--sand);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  .page-header {
+    background: var(--sea);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .page-header .ig-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .page-header .ig-icon svg { width: 22px; height: 22px; fill: white; }
+
+  .page-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: white;
+    letter-spacing: 0.02em;
+  }
+
+  .page-header p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--sand);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .step-badge {
+    width: 22px; height: 22px;
+    background: var(--sea);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tab-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1rem;
+    background: var(--sand);
+    padding: 4px;
+    border-radius: 10px;
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ink-mid);
+    transition: all 0.15s;
+  }
+
+  .tab.active {
+    background: var(--white);
+    color: var(--ink);
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .upload-area {
+    border: 1.5px dashed var(--sand-dark);
+    border-radius: 12px;
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--sand);
+  }
+
+  .upload-area:hover {
+    border-color: var(--terracotta-light);
+    background: #fdf8f4;
+  }
+
+  .upload-icon {
+    width: 44px; height: 44px;
+    margin: 0 auto 12px;
+    background: var(--white);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .upload-area p { font-size: 13px; color: var(--ink-mid); }
+  .upload-area .hint { font-size: 11px; color: var(--ink-light); margin-top: 4px; }
+
+  input[type="text"], input[type="url"], input[type="password"],
+  input[type="datetime-local"], textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--sand-dark);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    background: var(--white);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--sea-light);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.6;
+  }
+
+  .preview-img {
+    width: 100%;
+    max-height: 340px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+    margin-top: 12px;
+  }
+
+  .preview-empty {
+    background: var(--sand);
+    border-radius: 12px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-light);
+    font-size: 13px;
+    margin-top: 12px;
+  }
+
+  .scene-input {
+    margin-bottom: 12px;
+  }
+
+  .lang-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .lang-tab {
+    padding: 5px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--sand-dark);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ink-mid);
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .lang-tab.active {
+    background: var(--sea);
+    color: white;
+    border-color: var(--sea);
+  }
+
+  .char-count {
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  .hashtag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .hashtag {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    background: var(--sand);
+    color: var(--ink-mid);
+    border: 1px solid var(--sand-dark);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .hashtag.selected {
+    background: var(--sea-pale);
+    color: var(--sea);
+    border-color: var(--sea-light);
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--sand-dark);
+    background: var(--white);
+    color: var(--ink);
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn:hover { background: var(--sand); }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-ai {
+    background: var(--sea-pale);
+    color: var(--sea);
+    border-color: var(--sea-light);
+  }
+
+  .btn-ai:hover { background: #d8edf3; }
+
+  .btn-primary {
+    background: var(--sea);
+    color: white;
+    border-color: var(--sea);
+  }
+
+  .btn-primary:hover { background: #235e6d; }
+
+  .btn-publish {
+    background: linear-gradient(135deg, #f09433, #dc2743, #bc1888);
+    color: white;
+    border: none;
+    font-size: 15px;
+    padding: 12px 28px;
+  }
+
+  .btn-publish:hover { opacity: 0.9; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .status-bar {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+    line-height: 1.5;
+  }
+
+  .status-bar.info { background: var(--info-bg); color: var(--sea); display: block; }
+  .status-bar.success { background: var(--success-bg); color: var(--success); display: block; }
+  .status-bar.error { background: var(--error-bg); color: var(--error); display: block; }
+
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .settings-toggle {
+    font-size: 12px;
+    color: var(--ink-light);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--sand-dark);
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .settings-toggle:hover { background: var(--sand); }
+
+  .settings-panel { display: none; }
+  .settings-panel.open { display: block; }
+
+  .field-label {
+    font-size: 12px;
+    color: var(--ink-mid);
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .field-group { margin-bottom: 14px; }
+
+  .token-input {
+    font-family: 'DM Mono', monospace, 'DM Sans', sans-serif;
+    font-size: 13px;
+  }
+
+  .schedule-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .schedule-row input[type="datetime-local"] {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .hint-text {
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 6px;
+  }
+
+  .caption-area { display: none; margin-top: 1rem; }
+  .caption-area.visible { display: block; }
+
+  .divider {
+    height: 1px;
+    background: var(--sand);
+    margin: 1rem 0;
+  }
+
+  @media (max-width: 500px) {
+    .container { padding: 1rem; }
+    .card { padding: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="ig-icon">
+    <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+  </div>
+  <div>
+    <h1>Relais Casa Moresca</h1>
+    <p>Instagram Publisher — @relais_casa_moresca</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Impostazioni -->
+  <button class="settings-toggle" onclick="toggleSettings()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Impostazioni API
+  </button>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="card">
+      <div class="card-title">Configurazione</div>
+      <div class="field-group">
+        <label class="field-label">Instagram Access Token</label>
+        <input class="token-input" type="password" id="igToken" placeholder="IGAAcc1ZC..." />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Anthropic API Key</label>
+        <input class="token-input" type="password" id="anthropicKey" placeholder="sk-ant-..." />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Instagram User ID</label>
+        <input class="token-input" type="text" id="igUserId" value="17841400924386592" />
+      </div>
+      <button class="btn" onclick="saveSettings()">Salva impostazioni</button>
+      <div id="settingsStatus" class="status-bar"></div>
+    </div>
+  </div>
+
+  <!-- Step 1: Foto -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-badge">1</span>
+      Foto
+    </div>
+    <div class="tab-row">
+      <button class="tab active" id="tabUploadBtn" onclick="switchTab('upload')">Upload</button>
+      <button class="tab" id="tabUrlBtn" onclick="switchTab('url')">Da URL</button>
+    </div>
+
+    <div id="tabUpload">
+      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        </div>
+        <p>Clicca per caricare una foto</p>
+        <p class="hint">JPG o PNG — max 8MB</p>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)" />
+    </div>
+
+    <div id="tabUrl" style="display:none">
+      <input type="url" id="imageUrl" placeholder="https://... URL pubblico dell'immagine" oninput="loadFromUrl()" />
+      <p class="hint-text">L'immagine deve essere pubblicamente accessibile. Puoi usare imgbb.com per ottenere un URL diretto.</p>
+    </div>
+
+    <div id="previewArea">
+      <div class="preview-empty">Nessuna foto selezionata</div>
+    </div>
+  </div>
+
+  <!-- Step 2: Caption -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-badge">2</span>
+      Caption AI — IT / EN / DE
+    </div>
+    <input type="text" class="scene-input" id="sceneDesc" placeholder="Descrivi la foto (es: tramonto sul mare dalla terrazza, piscina al mattino, colazione con vista...)" />
+    <button class="btn btn-ai" onclick="generateCaption()">
+      <span id="genSpinner" style="display:none" class="spinner"></span>
+      Genera caption
+    </button>
+
+    <div class="caption-area" id="captionArea">
+      <div class="divider"></div>
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchLang('it')">🇮🇹 IT</button>
+        <button class="lang-tab" onclick="switchLang('en')">🇬🇧 EN</button>
+        <button class="lang-tab" onclick="switchLang('de')">🇩🇪 DE</button>
+      </div>
+      <textarea id="captionIt" placeholder="Caption in italiano..." oninput="updateCharCount()"></textarea>
+      <textarea id="captionEn" placeholder="Caption in English..." style="display:none" oninput="updateCharCount()"></textarea>
+      <textarea id="captionDe" placeholder="Caption auf Deutsch..." style="display:none" oninput="updateCharCount()"></textarea>
+      <div class="char-count" id="charCount">0 / 2200</div>
+
+      <div style="margin-top:14px;">
+        <div style="font-size:12px;color:#888;margin-bottom:6px;">Hashtag — clicca per selezionare</div>
+        <div class="hashtag-row" id="hashtagRow"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Pubblica -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-badge">3</span>
+      Pubblica
+    </div>
+    <div class="tab-row">
+      <button class="tab active" id="pubNowBtn" onclick="switchPublishTab('now')">Adesso</button>
+      <button class="tab" id="pubSchedBtn" onclick="switchPublishTab('schedule')">Programma</button>
+    </div>
+
+    <div id="publishNow">
+      <div class="btn-row">
+        <button class="btn btn-publish" onclick="publishPost()">
+          <span id="pubSpinner" style="display:none" class="spinner"></span>
+          Pubblica su Instagram
+        </button>
+        <button class="btn" onclick="copyCaption()">Copia testo</button>
+      </div>
+    </div>
+
+    <div id="publishSchedule" style="display:none">
+      <div class="schedule-row">
+        <input type="datetime-local" id="scheduleTime" />
+        <button class="btn btn-primary" onclick="schedulePost()">
+          <span id="schedSpinner" style="display:none" class="spinner"></span>
+          Programma
+        </button>
+      </div>
+      <p class="hint-text">Min 10 minuti nel futuro · Max 75 giorni</p>
+    </div>
+
+    <div class="status-bar" id="statusBar"></div>
+  </div>
+
+</div>
+
+<script>
+  let currentImageUrl = null;
+  let currentLang = 'it';
+  let selectedHashtags = new Set();
+
+  const defaultHashtags = [
+    '#casamoresca', '#relaiscastmoresca', '#terracina', '#portobadinot',
+    '#lazio', '#villaluxury', '#seaview', '#italyvacation', '#mediterraneo',
+    '#vacanzeitalia', '#villaaffitto', '#beachhouse', '#summervibes',
+    '#italytravel', '#relaxitaly'
+  ];
+
+  function loadSettings() {
+    const t = localStorage.getItem('cm_ig_token');
+    const k = localStorage.getItem('cm_anthropic_key');
+    const u = localStorage.getItem('cm_ig_userid');
+    if (t) document.getElementById('igToken').value = t;
+    if (k) document.getElementById('anthropicKey').value = k;
+    if (u) document.getElementById('igUserId').value = u;
+  }
+
+  function saveSettings() {
+    localStorage.setItem('cm_ig_token', document.getElementById('igToken').value.trim());
+    localStorage.setItem('cm_anthropic_key', document.getElementById('anthropicKey').value.trim());
+    localStorage.setItem('cm_ig_userid', document.getElementById('igUserId').value.trim());
+    showStatus('settingsStatus', 'Impostazioni salvate', 'success');
+  }
+
+  function toggleSettings() {
+    const p = document.getElementById('settingsPanel');
+    p.classList.toggle('open');
+  }
+
+  function switchTab(tab) {
+    document.getElementById('tabUpload').style.display = tab === 'upload' ? 'block' : 'none';
+    document.getElementById('tabUrl').style.display = tab === 'url' ? 'block' : 'none';
+    document.getElementById('tabUploadBtn').classList.toggle('active', tab === 'upload');
+    document.getElementById('tabUrlBtn').classList.toggle('active', tab === 'url');
+  }
+
+  function switchPublishTab(tab) {
+    document.getElementById('publishNow').style.display = tab === 'now' ? 'block' : 'none';
+    document.getElementById('publishSchedule').style.display = tab === 'schedule' ? 'block' : 'none';
+    document.getElementById('pubNowBtn').classList.toggle('active', tab === 'now');
+    document.getElementById('pubSchedBtn').classList.toggle('active', tab === 'schedule');
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      currentImageUrl = null;
+      window._uploadedDataUrl = ev.target.result;
+      document.getElementById('previewArea').innerHTML = `<img class="preview-img" src="${ev.target.result}" />`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function loadFromUrl() {
+    const url = document.getElementById('imageUrl').value.trim();
+    if (!url) return;
+    currentImageUrl = url;
+    window._uploadedDataUrl = null;
+    document.getElementById('previewArea').innerHTML = `<img class="preview-img" src="${url}" onerror="this.style.display='none'" />`;
+  }
+
+  function switchLang(lang) {
+    currentLang = lang;
+    ['it','en','de'].forEach(l => {
+      document.getElementById('caption' + l.charAt(0).toUpperCase() + l.slice(1)).style.display = l === lang ? 'block' : 'none';
+    });
+    document.querySelectorAll('.lang-tab').forEach((t, i) => {
+      t.classList.toggle('active', ['it','en','de'][i] === lang);
+    });
+    updateCharCount();
+  }
+
+  function updateCharCount() {
+    const id = 'caption' + currentLang.charAt(0).toUpperCase() + currentLang.slice(1);
+    const ta = document.getElementById(id);
+    if (ta) document.getElementById('charCount').textContent = `${ta.value.length} / 2200`;
+  }
+
+  function renderHashtags(tags) {
+    selectedHashtags = new Set(tags.slice(0, 10));
+    const row = document.getElementById('hashtagRow');
+    row.innerHTML = '';
+    tags.forEach(tag => {
+      const el = document.createElement('span');
+      el.className = 'hashtag' + (selectedHashtags.has(tag) ? ' selected' : '');
+      el.textContent = tag;
+      el.onclick = () => {
+        if (selectedHashtags.has(tag)) selectedHashtags.delete(tag);
+        else selectedHashtags.add(tag);
+        el.classList.toggle('selected', selectedHashtags.has(tag));
+      };
+      row.appendChild(el);
+    });
+  }
+
+  async function generateCaption() {
+    const apiKey = document.getElementById('anthropicKey').value.trim();
+    if (!apiKey) { showStatus('statusBar', 'Inserisci la Anthropic API Key nelle impostazioni', 'error'); return; }
+    const scene = document.getElementById('sceneDesc').value.trim() || 'foto del relais';
+
+    const spinner = document.getElementById('genSpinner');
+    spinner.style.display = 'inline-block';
+    showStatus('statusBar', 'Generazione caption AI in corso...', 'info');
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: `Sei il social media manager di Relais Casa Moresca, una villa vacanze esclusiva a Porto Badino, Terracina (Lazio, Italia). La villa ha una vista mare mozzafiato, piscina privata, terrazza panoramica e atmosfera mediterranea autentica. Le prenotazioni si fanno su bnbcasamoresca.com.
+
+Crea una caption Instagram per questa scena: "${scene}"
+
+Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
+{
+  "it": "caption italiana evocativa (max 200 caratteri, con emoji, chiudi con call to action tipo 'Prenota su bnbcasamoresca.com 🔗 link in bio')",
+  "en": "English caption (max 200 chars, evocative, with emoji, end with booking CTA)",
+  "de": "Deutsche Caption (max 200 Zeichen, evokativ, mit Emoji, mit Buchungs-CTA)",
+  "hashtags": ["#casamoresca", "#terracina", "#portobadino", "#lazio", "#villaluxury", "#seaview", "#italyvacation", "#mediterraneo", "#vacanzeitalia", "#beachvilla", "#italytravel", "#relaxitaly"]
+}`
+          }]
+        })
+      });
+
+      const data = await res.json();
+      const text = data.content[0].text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(text);
+
+      document.getElementById('captionIt').value = parsed.it || '';
+      document.getElementById('captionEn').value = parsed.en || '';
+      document.getElementById('captionDe').value = parsed.de || '';
+
+      const allTags = [...new Set([...(parsed.hashtags || []), ...defaultHashtags])];
+      renderHashtags(allTags);
+
+      document.getElementById('captionArea').classList.add('visible');
+      updateCharCount();
+      showStatus('statusBar', 'Caption generate in IT, EN e DE!', 'success');
+    } catch (e) {
+      showStatus('statusBar', 'Errore nella generazione: ' + e.message, 'error');
+    } finally {
+      spinner.style.display = 'none';
+    }
+  }
+
+  function getFinalCaption() {
+    const id = 'caption' + currentLang.charAt(0).toUpperCase() + currentLang.slice(1);
+    const ta = document.getElementById(id);
+    const caption = ta ? ta.value.trim() : '';
+    const hashtags = Array.from(selectedHashtags).join(' ');
+    return caption + (hashtags ? '\n.\n.\n' + hashtags : '');
+  }
+
+  function getPublishImageUrl() {
+    if (currentImageUrl) return currentImageUrl;
+    const imgEl = document.querySelector('#previewArea img');
+    if (imgEl && imgEl.src && imgEl.src.startsWith('http') && !imgEl.src.startsWith('data:')) return imgEl.src;
+    return null;
+  }
+
+  async function publishPost() {
+    const token = document.getElementById('igToken').value.trim();
+    const userId = document.getElementById('igUserId').value.trim();
+    if (!token) { showStatus('statusBar', 'Inserisci il token Instagram nelle impostazioni', 'error'); return; }
+
+    const imageUrl = getPublishImageUrl();
+    if (!imageUrl) {
+      showStatus('statusBar', 'Per pubblicare serve un URL pubblico dell\'immagine. Usa la tab "Da URL" o carica su imgbb.com prima.', 'error');
+      return;
+    }
+
+    const caption = getFinalCaption();
+    if (!caption.trim()) { showStatus('statusBar', 'Scrivi o genera una caption prima di pubblicare', 'error'); return; }
+
+    document.getElementById('pubSpinner').style.display = 'inline-block';
+    showStatus('statusBar', 'Creazione container post...', 'info');
+
+    try {
+      const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: imageUrl, caption: caption, access_token: token })
+      });
+      const d1 = await r1.json();
+      if (d1.error) throw new Error(d1.error.message);
+
+      showStatus('statusBar', 'Pubblicazione in corso...', 'info');
+
+      const r2 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media_publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creation_id: d1.id, access_token: token })
+      });
+      const d2 = await r2.json();
+      if (d2.error) throw new Error(d2.error.message);
+
+      showStatus('statusBar', '✓ Post pubblicato con successo su @relais_casa_moresca!', 'success');
+    } catch (e) {
+      showStatus('statusBar', 'Errore: ' + e.message, 'error');
+    } finally {
+      document.getElementById('pubSpinner').style.display = 'none';
+    }
+  }
+
+  async function schedulePost() {
+    const token = document.getElementById('igToken').value.trim();
+    const userId = document.getElementById('igUserId').value.trim();
+    if (!token) { showStatus('statusBar', 'Inserisci il token Instagram nelle impostazioni', 'error'); return; }
+
+    const imageUrl = getPublishImageUrl();
+    if (!imageUrl) { showStatus('statusBar', 'Inserisci un URL pubblico dell\'immagine per programmare', 'error'); return; }
+
+    const caption = getFinalCaption();
+    const scheduleTime = document.getElementById('scheduleTime').value;
+    if (!scheduleTime) { showStatus('statusBar', 'Seleziona data e ora di pubblicazione', 'error'); return; }
+
+    const publishAt = Math.floor(new Date(scheduleTime).getTime() / 1000);
+    if (publishAt < Math.floor(Date.now() / 1000) + 600) {
+      showStatus('statusBar', 'L\'orario deve essere almeno 10 minuti nel futuro', 'error');
+      return;
+    }
+
+    document.getElementById('schedSpinner').style.display = 'inline-block';
+    showStatus('statusBar', 'Programmazione in corso...', 'info');
+
+    try {
+      const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: imageUrl, caption: caption, publish_at: publishAt, access_token: token })
+      });
+      const d1 = await r1.json();
+      if (d1.error) throw new Error(d1.error.message);
+
+      const dt = new Date(scheduleTime).toLocaleString('it-IT');
+      showStatus('statusBar', `✓ Post programmato per ${dt}`, 'success');
+    } catch (e) {
+      showStatus('statusBar', 'Errore: ' + e.message, 'error');
+    } finally {
+      document.getElementById('schedSpinner').style.display = 'none';
+    }
+  }
+
+  function copyCaption() {
+    const text = getFinalCaption();
+    if (!text.trim()) { showStatus('statusBar', 'Nessuna caption da copiare', 'error'); return; }
+    navigator.clipboard.writeText(text).then(() => showStatus('statusBar', 'Caption copiata negli appunti!', 'success'));
+  }
+
+  function showStatus(id, msg, type) {
+    const bar = document.getElementById(id);
+    if (!bar) return;
+    bar.className = 'status-bar ' + type;
+    bar.textContent = msg;
+  }
+
+  // Init
+  loadSettings();
+  renderHashtags(defaultHashtags);
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + 30);
+  document.getElementById('scheduleTime').value = now.toISOString().slice(0, 16);
+</script>
+</body>
+</html>
