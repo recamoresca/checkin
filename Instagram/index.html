@@ -805,6 +805,17 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
     return null;
   }
 
+  async function igFetch(path, params) {
+    const body = new URLSearchParams(params);
+    const res = await fetch(`https://graph.facebook.com/v21.0${path}`, {
+      method: 'POST',
+      body
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data;
+  }
+
   async function publishPost() {
     const token = document.getElementById('igToken').value.trim();
     const userId = document.getElementById('igUserId').value.trim();
@@ -817,67 +828,35 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
       if (currentContentType === 'reel') {
         const videoUrl = document.getElementById('videoUrl').value.trim();
         if (!videoUrl) { showStatus('statusBar', 'Inserisci l\'URL del video per il Reel', 'error'); return; }
-        showStatus('statusBar', 'Caricamento Reel in corso (può richiedere qualche minuto)...', 'info');
-        const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ media_type: 'REELS', video_url: videoUrl, caption, access_token: token })
-        });
-        const d1 = await r1.json();
-        if (d1.error) throw new Error(d1.error.message);
-        // Poll until ready
+        showStatus('statusBar', 'Caricamento Reel in corso...', 'info');
+        const d1 = await igFetch(`/${userId}/media`, { media_type: 'REELS', video_url: videoUrl, caption, access_token: token });
         let status = 'IN_PROGRESS', attempts = 0;
         while (status === 'IN_PROGRESS' && attempts < 24) {
           await new Promise(r => setTimeout(r, 5000));
-          const rs = await fetch(`https://graph.instagram.com/v21.0/${d1.id}?fields=status_code&access_token=${token}`);
-          const ds = await rs.json();
+          const ds = await (await fetch(`https://graph.facebook.com/v21.0/${d1.id}?fields=status_code&access_token=${token}`)).json();
           status = ds.status_code;
           attempts++;
         }
         if (status !== 'FINISHED') throw new Error('Il video non è stato processato. Riprova.');
-        const r2 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media_publish`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ creation_id: d1.id, access_token: token })
-        });
-        const d2 = await r2.json();
-        if (d2.error) throw new Error(d2.error.message);
+        await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
         showStatus('statusBar', '✓ Reel pubblicato su @relais_casa_moresca!', 'success');
 
       } else if (currentContentType === 'story') {
         const imageUrl = getPublishImageUrl();
         if (!imageUrl) { showStatus('statusBar', 'Inserisci un URL pubblico dell\'immagine per la Storia', 'error'); return; }
         showStatus('statusBar', 'Pubblicazione Storia...', 'info');
-        const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ media_type: 'STORIES', image_url: imageUrl, access_token: token })
-        });
-        const d1 = await r1.json();
-        if (d1.error) throw new Error(d1.error.message);
-        const r2 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media_publish`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ creation_id: d1.id, access_token: token })
-        });
-        const d2 = await r2.json();
-        if (d2.error) throw new Error(d2.error.message);
+        const d1 = await igFetch(`/${userId}/media`, { media_type: 'STORIES', image_url: imageUrl, access_token: token });
+        await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
         showStatus('statusBar', '✓ Storia pubblicata su @relais_casa_moresca!', 'success');
 
       } else {
         const imageUrl = getPublishImageUrl();
-        if (!imageUrl) { showStatus('statusBar', 'Per pubblicare serve un URL pubblico dell\'immagine. Usa "Da URL" o carica su imgbb.com.', 'error'); return; }
+        if (!imageUrl) { showStatus('statusBar', 'Per pubblicare serve un URL pubblico dell\'immagine', 'error'); return; }
         if (!caption.trim()) { showStatus('statusBar', 'Scrivi o genera una caption prima di pubblicare', 'error'); return; }
         showStatus('statusBar', 'Creazione container post...', 'info');
-        const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image_url: imageUrl, caption, access_token: token })
-        });
-        const d1 = await r1.json();
-        if (d1.error) throw new Error(d1.error.message);
+        const d1 = await igFetch(`/${userId}/media`, { image_url: imageUrl, caption, access_token: token });
         showStatus('statusBar', 'Pubblicazione in corso...', 'info');
-        const r2 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media_publish`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ creation_id: d1.id, access_token: token })
-        });
-        const d2 = await r2.json();
-        if (d2.error) throw new Error(d2.error.message);
+        await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
         showStatus('statusBar', '✓ Post pubblicato su @relais_casa_moresca!', 'success');
       }
     } catch (e) {
@@ -909,14 +888,7 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
     showStatus('statusBar', 'Programmazione in corso...', 'info');
 
     try {
-      const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image_url: imageUrl, caption: caption, publish_at: publishAt, access_token: token })
-      });
-      const d1 = await r1.json();
-      if (d1.error) throw new Error(d1.error.message);
-
+      await igFetch(`/${userId}/media`, { image_url: imageUrl, caption, publish_at: publishAt, access_token: token });
       const dt = new Date(scheduleTime).toLocaleString('it-IT');
       showStatus('statusBar', `✓ Post programmato per ${dt}`, 'success');
     } catch (e) {
