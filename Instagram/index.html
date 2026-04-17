@@ -500,8 +500,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 
 
   function updateCharCount() {
-    const id = 'caption' + currentLang.charAt(0).toUpperCase() + currentLang.slice(1);
-    const ta = document.getElementById(id);
+    const ta = document.getElementById('captionIt');
     if (ta) document.getElementById('charCount').textContent = `${ta.value.length} / 2200`;
   }
 
@@ -599,7 +598,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
+          max_tokens: 2000,
           messages: [{
             role: 'user',
             content: `Sei il social media manager di Relais Casa Moresca, un relais di charme a Porto Badino, Terracina, sulla Riviera di Ulisse (Lazio).
@@ -671,8 +670,7 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
   }
 
   function getFinalCaption() {
-    const id = 'caption' + currentLang.charAt(0).toUpperCase() + currentLang.slice(1);
-    const ta = document.getElementById(id);
+    const ta = document.getElementById('captionIt');
     const caption = ta ? ta.value.trim() : '';
     const hashtags = Array.from(selectedHashtags).join(' ');
     return caption + (hashtags ? '\n.\n.\n' + hashtags : '');
