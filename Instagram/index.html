@@ -687,13 +687,18 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
       ? `\n\nOFFERTA DA PROMUOVERE NEL POST:\n- Tipo: ${offer.label}\n- Sconto: ${offer.discount}%\n- Il post deve mettere in evidenza l'offerta con urgency (emoji 🔥 o ⚡ o 🌅), citare lo sconto e invitare a prenotare subito.`
       : '';
 
-    // Build image block if a photo is selected
+    // Build image block — always use base64 (URL auth may block Claude servers)
     let imageBlock = null;
     if (window._uploadedDataUrl) {
       const match = window._uploadedDataUrl.match(/^data:([^;]+);base64,(.+)$/);
       if (match) imageBlock = { type: 'image', source: { type: 'base64', media_type: match[1], data: match[2] } };
     } else if (currentImageUrl) {
-      imageBlock = { type: 'image', source: { type: 'url', url: currentImageUrl } };
+      try {
+        const blob = await fetch(currentImageUrl).then(r => r.blob());
+        const b64 = await new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(blob); });
+        const match = b64.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) imageBlock = { type: 'image', source: { type: 'base64', media_type: match[1], data: match[2] } };
+      } catch { /* skip image if fetch fails */ }
     }
 
     const spinner = document.getElementById('genSpinner');
