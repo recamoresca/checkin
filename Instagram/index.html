@@ -545,7 +545,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
       if (!files.length) { grid.innerHTML = '<p class="imgbb-empty">Nessuna foto trovata nella cartella</p>'; return; }
       grid.innerHTML = files.map(f => {
         const thumb = `https://drive.google.com/thumbnail?id=${f.id}&sz=w200-h200`;
-        const full  = `https://drive.google.com/uc?export=view&id=${f.id}`;
+        const full  = `https://lh3.googleusercontent.com/d/${f.id}`;
         return `<div class="imgbb-thumb" onclick="selectDrivePhoto('${full}', this)" title="${f.name}">
           <img src="${thumb}" loading="lazy" />
         </div>`;
