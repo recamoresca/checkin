@@ -117,15 +117,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 .scene-input{margin-bottom:12px}
 
 /* LANG TABS */
-.lang-tabs{display:flex;gap:6px;margin-bottom:10px}
-.lang-tab{
-  padding:5px 14px;border-radius:20px;
-  border:1.5px solid var(--border);
-  font-size:11px;font-family:'Raleway',sans-serif;font-weight:700;
-  letter-spacing:.06em;cursor:pointer;
-  background:transparent;color:var(--muted);transition:all .15s;
-}
-.lang-tab.active{background:var(--arch);color:white;border-color:var(--arch)}
+
 
 /* CHAR COUNT */
 .char-count{font-size:10px;color:var(--muted);margin-top:5px;text-align:right;letter-spacing:.04em}
@@ -389,14 +381,9 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 
     <div class="caption-area" id="captionArea">
       <div class="divider"></div>
-      <div class="lang-tabs">
-        <button class="lang-tab active" onclick="switchLang('it')">🇮🇹 IT</button>
-        <button class="lang-tab" onclick="switchLang('en')">🇬🇧 EN</button>
-        <button class="lang-tab" onclick="switchLang('de')">🇩🇪 DE</button>
-      </div>
-      <textarea id="captionIt" placeholder="Caption in italiano..." oninput="updateCharCount()"></textarea>
-      <textarea id="captionEn" placeholder="Caption in English..." style="display:none" oninput="updateCharCount()"></textarea>
-      <textarea id="captionDe" placeholder="Caption auf Deutsch..." style="display:none" oninput="updateCharCount()"></textarea>
+      <textarea id="captionIt" placeholder="Caption..." oninput="updateCharCount()"></textarea>
+      <textarea id="captionEn" style="display:none"></textarea>
+      <textarea id="captionDe" style="display:none"></textarea>
       <div class="char-count" id="charCount">0 / 2200</div>
 
       <div style="margin-top:14px;">
@@ -445,7 +432,6 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 
 <script>
   let currentImageUrl = null;
-  let currentLang = 'it';
   let selectedHashtags = new Set();
 
   const defaultHashtags = [
@@ -511,16 +497,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     document.getElementById('previewArea').innerHTML = `<img class="preview-img" src="${url}" onerror="this.style.display='none'" />`;
   }
 
-  function switchLang(lang) {
-    currentLang = lang;
-    ['it','en','de'].forEach(l => {
-      document.getElementById('caption' + l.charAt(0).toUpperCase() + l.slice(1)).style.display = l === lang ? 'block' : 'none';
-    });
-    document.querySelectorAll('.lang-tab').forEach((t, i) => {
-      t.classList.toggle('active', ['it','en','de'][i] === lang);
-    });
-    updateCharCount();
-  }
+
 
   function updateCharCount() {
     const id = 'caption' + currentLang.charAt(0).toUpperCase() + currentLang.slice(1);
