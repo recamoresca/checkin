@@ -681,11 +681,20 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   async function generateCaption() {
     const apiKey = document.getElementById('anthropicKey').value.trim();
     if (!apiKey) { showStatus('captionStatus', 'Inserisci la Anthropic API Key nelle impostazioni', 'error'); return; }
-    const scene = document.getElementById('sceneDesc').value.trim() || 'foto del relais';
+    const scene = document.getElementById('sceneDesc').value.trim();
     const offer = getOfferContext();
     const offerBlock = offer
       ? `\n\nOFFERTA DA PROMUOVERE NEL POST:\n- Tipo: ${offer.label}\n- Sconto: ${offer.discount}%\n- Il post deve mettere in evidenza l'offerta con urgency (emoji 🔥 o ⚡ o 🌅), citare lo sconto e invitare a prenotare subito.`
       : '';
+
+    // Build image block if a photo is selected
+    let imageBlock = null;
+    if (window._uploadedDataUrl) {
+      const match = window._uploadedDataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) imageBlock = { type: 'image', source: { type: 'base64', media_type: match[1], data: match[2] } };
+    } else if (currentImageUrl) {
+      imageBlock = { type: 'image', source: { type: 'url', url: currentImageUrl } };
+    }
 
     const spinner = document.getElementById('genSpinner');
     spinner.style.display = 'inline-block';
@@ -703,9 +712,8 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 2000,
-          messages: [{
-            role: 'user',
-            content: `Sei il social media manager di Relais Casa Moresca, un relais di charme a Porto Badino, Terracina, sulla Riviera di Ulisse (Lazio).
+          messages: [(() => {
+            const promptText = `Sei il social media manager di Relais Casa Moresca, un relais di charme a Porto Badino, Terracina, sulla Riviera di Ulisse (Lazio).
 
 IDENTITÀ DEL BRAND:
 - Architettura moresca: tre grandi archi del Patio, calce bianca, inserti in maiolica
@@ -735,7 +743,8 @@ EMOJI: usale con parsimonia, solo dove aggiungono significato (🌅 🌊 🌿 �
 
 ${offerBlock ? "OFFERTA: integra l'offerta nel corpo del testo IT con urgency (scadenza, disponibilità limitate). Replica in EN." : ""}
 
-Scena/contesto: "${scene}"${offerBlock}
+${imageBlock ? "FOTO ALLEGATA: analizza l'immagine — soggetto, ambiente, luce, mood — e basa titolo e corpo del post su ciò che vedi. Scegli hashtag pertinenti al soggetto fotografato." : `Scena/contesto: "${scene || 'foto del relais'}"`}
+${scene && imageBlock ? `Nota aggiuntiva: "${scene}"` : ''}${offerBlock}
 
 Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
 {
@@ -743,8 +752,12 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
   "en": "(stesso testo della caption it, è già bilingue)",
   "de": "(stesso testo della caption it)",
   "hashtags": ["#RelaisCasaMoresca", "#Terracina", "#Lazio", "#Italia", "#VacanzeEsclusive", "EarlyBooker", "#TravelItaly", "VisitLazio", "BoutiqueHotel", "#LuxuryTravel", "ViaggioItalia", "MediterraneanVibes", "DreamGetaway", "#ItaliaVacanza", "EstateItaliana", "#DesignHotel", "UnforgettableExperiences", "LuxuryRelais", "SpiaggiaPrivata", "Estate2026"]
-}`
-          }]
+}`;
+            return {
+              role: 'user',
+              content: imageBlock ? [imageBlock, { type: 'text', text: promptText }] : promptText
+            };
+          })()]
         })
       });
 
