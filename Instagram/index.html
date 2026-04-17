@@ -222,6 +222,21 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 .discount-row input{width:90px;flex:none;font-size:18px;font-weight:700;text-align:center;color:var(--arch)}
 .discount-row span{font-size:13px;color:var(--muted);font-weight:600}
 
+
+/* CONTENT TYPE */
+.ctype-row{display:flex;gap:8px;margin-bottom:16px}
+.ctype-btn{
+  flex:1;padding:10px 8px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--white);
+  font-family:'Raleway',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  cursor:pointer;transition:all .15s;text-align:center;
+}
+.ctype-btn span{display:block;font-size:18px;margin-bottom:4px}
+.ctype-btn.active{border-color:var(--arch);background:var(--calce-2);color:var(--arch)}
+.video-url-area{margin-top:4px}
+.video-hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+
 </style>
 </head>
 <body>
@@ -268,8 +283,14 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   <div class="card">
     <div class="card-title">
       <span class="step-badge">1</span>
-      Foto
+      Contenuto
     </div>
+    <div class="ctype-row">
+      <button class="ctype-btn active" id="ctype-post" onclick="switchContentType('post')"><span>📸</span>Post</button>
+      <button class="ctype-btn" id="ctype-story" onclick="switchContentType('story')"><span>📖</span>Storia</button>
+      <button class="ctype-btn" id="ctype-reel" onclick="switchContentType('reel')"><span>🎬</span>Reel</button>
+    </div>
+    <div id="mediaImageArea">
     <div class="tab-row">
       <button class="tab active" id="tabUploadBtn" onclick="switchTab('upload')">Upload</button>
       <button class="tab" id="tabUrlBtn" onclick="switchTab('url')">Da URL</button>
@@ -293,6 +314,13 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 
     <div id="previewArea">
       <div class="preview-empty">Nessuna foto selezionata</div>
+    </div>
+    </div><!-- /mediaImageArea -->
+    <div id="mediaVideoArea" style="display:none">
+      <div class="video-url-area">
+        <input type="url" id="videoUrl" placeholder="https://... URL pubblico del video (MP4)" oninput="loadVideoUrl()" />
+        <p class="video-hint">⚠️ Il video deve essere un URL pubblico MP4.<br>Puoi usare un link diretto da Google Drive, Dropbox o similar.</p>
+      </div>
     </div>
   </div>
 
@@ -518,6 +546,38 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   }
 
 
+
+  // Unicode bold sans-serif conversion
+  const BOLD_MAP = {};
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.split('').forEach((ch, i) => {
+    const bases = [0x1D400,0x1D41A,0x1D7CE]; // uc A, a, 0
+    if (i < 26) BOLD_MAP[ch] = String.fromCodePoint(0x1D400 + i);
+    else if (i < 52) BOLD_MAP[ch] = String.fromCodePoint(0x1D41A + (i-26));
+    else BOLD_MAP[ch] = String.fromCodePoint(0x1D7CE + (i-52));
+  });
+  function toBoldUnicode(str) {
+    return str.split('').map(c => BOLD_MAP[c] || c).join('');
+  }
+  function applyBold(text) {
+    return text.replace(/\*\*([^*]+)\*\*/g, (_, s) => toBoldUnicode(s));
+  }
+
+  let currentContentType = 'post';
+
+  function switchContentType(type) {
+    currentContentType = type;
+    ['post','story','reel'].forEach(t => {
+      document.getElementById('ctype-' + t).classList.toggle('active', t === type);
+    });
+    document.getElementById('mediaImageArea').style.display = type === 'reel' ? 'none' : 'block';
+    document.getElementById('mediaVideoArea').style.display = type === 'reel' ? 'block' : 'none';
+  }
+
+  function loadVideoUrl() {
+    const url = document.getElementById('videoUrl').value.trim();
+    currentImageUrl = url || null;
+  }
+
   function onOfferChange() {
     const val = document.querySelector('input[name="offer"]:checked').value;
     document.getElementById('offerDiscountBox').classList.toggle('visible', val !== 'none');
@@ -578,7 +638,7 @@ IDENTITÀ DEL BRAND:
 
 STILE DEL POST:
 - Tono moderno, diretto, fresco — NON poetico, NON letterario
-- Inizia SEMPRE con un titolo breve in grassetto (usa ** per il grassetto, es: **Colazione in giardino 🌿**)
+- Inizia SEMPRE con un titolo breve in grassetto Unicode (usa ** intorno al titolo, es: **Colazione in giardino 🌿**)
 - Usa piccole emoji contestuali inline nel testo (☀️ 🌊 🌿 🍋 🏖️ 🛶 🌅 🍹 ✨ 📍 ecc.)
 - Frasi brevi, ritmo vivace, al massimo 2-3 righe di testo dopo il titolo
 - Chiudi con CTA semplice: "📍 bnbcasamoresca.com — link in bio"
@@ -587,7 +647,7 @@ Crea una caption Instagram per questa scena: "\${scene}"\${offerBlock}
 
 Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
 {
-  "it": "**Titolo breve 🌿**\n\nTesto moderno 2-3 righe con emoji inline.\n\n📍 bnbcasamoresca.com — link in bio",
+  "it": "**Titolo breve 🌿**\n\nTesto moderno 3-4 righe con emoji inline. Puoi aggiungere qualche dettaglio in più sulla scena o sull'offerta.\n\n📍 bnbcasamoresca.com — link in bio",
   "en": "**Short title 🌿**\n\nModern text 2-3 lines with inline emoji.\n\n📍 bnbcasamoresca.com — link in bio",
   "de": "**Kurzer Titel 🌿**\n\nModerner Text 2-3 Zeilen mit Emoji.\n\n📍 bnbcasamoresca.com — Link in Bio",
   "hashtags": ["#casamoresca", "#relaiscastmoresca", "#terracina", "#portobadino", "#riviерadulisse", "#lazio", "#villaluxury", "#seaview", "#italyvacation", "#mediterraneo", "#vacanzeitalia", "#spiaggiaprivata", "#isoladiponza", "#italytravel", "#relaxitaly"]
@@ -604,9 +664,9 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
       );
       const parsed = JSON.parse(text);
 
-      document.getElementById('captionIt').value = parsed.it || '';
-      document.getElementById('captionEn').value = parsed.en || '';
-      document.getElementById('captionDe').value = parsed.de || '';
+      document.getElementById('captionIt').value = applyBold(parsed.it || '');
+      document.getElementById('captionEn').value = applyBold(parsed.en || '');
+      document.getElementById('captionDe').value = applyBold(parsed.de || '');
 
       const allTags = [...new Set([...(parsed.hashtags || []), ...defaultHashtags])];
       renderHashtags(allTags);
@@ -641,38 +701,76 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
     const userId = document.getElementById('igUserId').value.trim();
     if (!token) { showStatus('statusBar', 'Inserisci il token Instagram nelle impostazioni', 'error'); return; }
 
-    const imageUrl = getPublishImageUrl();
-    if (!imageUrl) {
-      showStatus('statusBar', 'Per pubblicare serve un URL pubblico dell\'immagine. Usa la tab "Da URL" o carica su imgbb.com prima.', 'error');
-      return;
-    }
-
     const caption = getFinalCaption();
-    if (!caption.trim()) { showStatus('statusBar', 'Scrivi o genera una caption prima di pubblicare', 'error'); return; }
-
     document.getElementById('pubSpinner').style.display = 'inline-block';
-    showStatus('statusBar', 'Creazione container post...', 'info');
 
     try {
-      const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image_url: imageUrl, caption: caption, access_token: token })
-      });
-      const d1 = await r1.json();
-      if (d1.error) throw new Error(d1.error.message);
+      if (currentContentType === 'reel') {
+        const videoUrl = document.getElementById('videoUrl').value.trim();
+        if (!videoUrl) { showStatus('statusBar', 'Inserisci l\'URL del video per il Reel', 'error'); return; }
+        showStatus('statusBar', 'Caricamento Reel in corso (può richiedere qualche minuto)...', 'info');
+        const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ media_type: 'REELS', video_url: videoUrl, caption, access_token: token })
+        });
+        const d1 = await r1.json();
+        if (d1.error) throw new Error(d1.error.message);
+        // Poll until ready
+        let status = 'IN_PROGRESS', attempts = 0;
+        while (status === 'IN_PROGRESS' && attempts < 24) {
+          await new Promise(r => setTimeout(r, 5000));
+          const rs = await fetch(`https://graph.instagram.com/v21.0/${d1.id}?fields=status_code&access_token=${token}`);
+          const ds = await rs.json();
+          status = ds.status_code;
+          attempts++;
+        }
+        if (status !== 'FINISHED') throw new Error('Il video non è stato processato. Riprova.');
+        const r2 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media_publish`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ creation_id: d1.id, access_token: token })
+        });
+        const d2 = await r2.json();
+        if (d2.error) throw new Error(d2.error.message);
+        showStatus('statusBar', '✓ Reel pubblicato su @relais_casa_moresca!', 'success');
 
-      showStatus('statusBar', 'Pubblicazione in corso...', 'info');
+      } else if (currentContentType === 'story') {
+        const imageUrl = getPublishImageUrl();
+        if (!imageUrl) { showStatus('statusBar', 'Inserisci un URL pubblico dell\'immagine per la Storia', 'error'); return; }
+        showStatus('statusBar', 'Pubblicazione Storia...', 'info');
+        const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ media_type: 'STORIES', image_url: imageUrl, access_token: token })
+        });
+        const d1 = await r1.json();
+        if (d1.error) throw new Error(d1.error.message);
+        const r2 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media_publish`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ creation_id: d1.id, access_token: token })
+        });
+        const d2 = await r2.json();
+        if (d2.error) throw new Error(d2.error.message);
+        showStatus('statusBar', '✓ Storia pubblicata su @relais_casa_moresca!', 'success');
 
-      const r2 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media_publish`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ creation_id: d1.id, access_token: token })
-      });
-      const d2 = await r2.json();
-      if (d2.error) throw new Error(d2.error.message);
-
-      showStatus('statusBar', '✓ Post pubblicato con successo su @relais_casa_moresca!', 'success');
+      } else {
+        const imageUrl = getPublishImageUrl();
+        if (!imageUrl) { showStatus('statusBar', 'Per pubblicare serve un URL pubblico dell\'immagine. Usa "Da URL" o carica su imgbb.com.', 'error'); return; }
+        if (!caption.trim()) { showStatus('statusBar', 'Scrivi o genera una caption prima di pubblicare', 'error'); return; }
+        showStatus('statusBar', 'Creazione container post...', 'info');
+        const r1 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_url: imageUrl, caption, access_token: token })
+        });
+        const d1 = await r1.json();
+        if (d1.error) throw new Error(d1.error.message);
+        showStatus('statusBar', 'Pubblicazione in corso...', 'info');
+        const r2 = await fetch(`https://graph.instagram.com/v21.0/${userId}/media_publish`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ creation_id: d1.id, access_token: token })
+        });
+        const d2 = await r2.json();
+        if (d2.error) throw new Error(d2.error.message);
+        showStatus('statusBar', '✓ Post pubblicato su @relais_casa_moresca!', 'success');
+      }
     } catch (e) {
       showStatus('statusBar', 'Errore: ' + e.message, 'error');
     } finally {
