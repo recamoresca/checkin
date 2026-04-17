@@ -799,7 +799,13 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
   }
 
   function getPublishImageUrl() {
-    if (currentImageUrl) return currentImageUrl;
+    let url = currentImageUrl;
+    // Convert lh3.googleusercontent.com Drive CDN URL to public uc?export=view URL
+    if (url && url.includes('lh3.googleusercontent.com/d/')) {
+      const fileId = url.split('/d/')[1].split('?')[0];
+      url = `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+    if (url) return url;
     const imgEl = document.querySelector('#previewArea img');
     if (imgEl && imgEl.src && imgEl.src.startsWith('http') && !imgEl.src.startsWith('data:')) return imgEl.src;
     return null;
