@@ -200,6 +200,28 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   .container{padding:12px 12px 80px}
   .card{padding:14px}
 }
+
+/* OFFER CARD */
+.offer-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.offer-opt{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--white);
+  cursor:pointer;transition:all .15s;user-select:none;
+}
+.offer-opt:hover{border-color:var(--arch-mid);background:var(--calce)}
+.offer-opt.selected{border-color:var(--arch);background:var(--calce-2)}
+.offer-opt input[type=radio]{accent-color:var(--arch);width:16px;height:16px;flex-shrink:0;cursor:pointer}
+.offer-opt-body{flex:1}
+.offer-opt-label{font-size:13px;font-weight:700;color:var(--arch);letter-spacing:.02em}
+.offer-opt-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.offer-opt-icon{font-size:20px;flex-shrink:0}
+.offer-discount{display:none;margin-top:10px}
+.offer-discount.visible{display:block}
+.discount-row{display:flex;align-items:center;gap:10px;margin-top:6px}
+.discount-row input{width:90px;flex:none;font-size:18px;font-weight:700;text-align:center;color:var(--arch)}
+.discount-row span{font-size:13px;color:var(--muted);font-weight:600}
+
 </style>
 </head>
 <body>
@@ -274,10 +296,60 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     </div>
   </div>
 
-  <!-- Step 2: Caption -->
+
+  <!-- Step 2: Offerta -->
   <div class="card">
     <div class="card-title">
       <span class="step-badge">2</span>
+      Offerta speciale <span style="font-weight:400;opacity:.6">(facoltativo)</span>
+    </div>
+    <div class="offer-grid">
+      <label class="offer-opt" id="offer-none">
+        <input type="radio" name="offer" value="none" checked onchange="onOfferChange()">
+        <span class="offer-opt-icon">🚫</span>
+        <div class="offer-opt-body">
+          <div class="offer-opt-label">Nessuna offerta</div>
+          <div class="offer-opt-sub">Post standard senza promozione</div>
+        </div>
+      </label>
+      <label class="offer-opt" id="offer-weekly">
+        <input type="radio" name="offer" value="weekly" onchange="onOfferChange()">
+        <span class="offer-opt-icon">🗓️</span>
+        <div class="offer-opt-body">
+          <div class="offer-opt-label">Soggiorno settimanale</div>
+          <div class="offer-opt-sub">Sconto per chi prenota 7+ notti</div>
+        </div>
+      </label>
+      <label class="offer-opt" id="offer-lastminute">
+        <input type="radio" name="offer" value="lastminute" onchange="onOfferChange()">
+        <span class="offer-opt-icon">⚡</span>
+        <div class="offer-opt-body">
+          <div class="offer-opt-label">Last minute</div>
+          <div class="offer-opt-sub">Offerta per date ravvicinate</div>
+        </div>
+      </label>
+      <label class="offer-opt" id="offer-earlybird">
+        <input type="radio" name="offer" value="earlybird" onchange="onOfferChange()">
+        <span class="offer-opt-icon">🌅</span>
+        <div class="offer-opt-body">
+          <div class="offer-opt-label">Prenota prima</div>
+          <div class="offer-opt-sub">Sconto per prenotazioni anticipate</div>
+        </div>
+      </label>
+    </div>
+    <div class="offer-discount" id="offerDiscountBox">
+      <label class="field-label">Sconto offerta</label>
+      <div class="discount-row">
+        <input type="number" id="discountPct" min="5" max="50" step="5" value="10" placeholder="10" />
+        <span>% di sconto sul soggiorno</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Caption -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-badge">3</span>
       Caption AI — IT / EN / DE
     </div>
     <input type="text" class="scene-input" id="sceneDesc" placeholder="Nota per il post — lascia vuoto per lasciare fare all'AI" />
@@ -309,7 +381,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   <!-- Step 3: Pubblica -->
   <div class="card">
     <div class="card-title">
-      <span class="step-badge">3</span>
+      <span class="step-badge">4</span>
       Pubblica
     </div>
     <div class="tab-row">
@@ -445,10 +517,35 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     });
   }
 
+
+  function onOfferChange() {
+    const val = document.querySelector('input[name="offer"]:checked').value;
+    document.getElementById('offerDiscountBox').classList.toggle('visible', val !== 'none');
+    document.querySelectorAll('.offer-opt').forEach(el => {
+      el.classList.toggle('selected', el.querySelector('input').value === val);
+    });
+  }
+
+  function getOfferContext() {
+    const val = document.querySelector('input[name="offer"]:checked').value;
+    if (val === 'none') return null;
+    const pct = document.getElementById('discountPct').value || '10';
+    const labels = {
+      weekly: 'Soggiorno settimanale',
+      lastminute: 'Last minute',
+      earlybird: 'Prenota prima'
+    };
+    return { type: val, label: labels[val], discount: pct };
+  }
+
   async function generateCaption() {
     const apiKey = document.getElementById('anthropicKey').value.trim();
     if (!apiKey) { showStatus('captionStatus', 'Inserisci la Anthropic API Key nelle impostazioni', 'error'); return; }
     const scene = document.getElementById('sceneDesc').value.trim() || 'foto del relais';
+    const offer = getOfferContext();
+    const offerBlock = offer
+      ? `\n\nOFFERTA DA PROMUOVERE NEL POST:\n- Tipo: ${offer.label}\n- Sconto: ${offer.discount}%\n- Il post deve mettere in evidenza l'offerta con urgency (emoji 🔥 o ⚡ o 🌅), citare lo sconto e invitare a prenotare subito.`
+      : '';
 
     const spinner = document.getElementById('genSpinner');
     spinner.style.display = 'inline-block';
@@ -486,7 +583,7 @@ STILE DEL POST:
 - Frasi brevi, ritmo vivace, al massimo 2-3 righe di testo dopo il titolo
 - Chiudi con CTA semplice: "📍 bnbcasamoresca.com — link in bio"
 
-Crea una caption Instagram per questa scena: "\${scene}"
+Crea una caption Instagram per questa scena: "\${scene}"\${offerBlock}
 
 Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
 {
