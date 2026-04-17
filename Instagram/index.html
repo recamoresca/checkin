@@ -284,15 +284,12 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
       <div class="field-group">
         <label class="field-label">Cloudinary Cloud Name</label>
         <input class="token-input" type="text" id="cloudinaryCloud" placeholder="es. my-cloud" />
+        <p class="hint-text">Trovala su cloudinary.com → Dashboard</p>
       </div>
       <div class="field-group">
-        <label class="field-label">Cloudinary API Key</label>
-        <input class="token-input" type="text" id="cloudinaryKey" placeholder="123456789012345" />
-      </div>
-      <div class="field-group">
-        <label class="field-label">Cloudinary API Secret</label>
-        <input class="token-input" type="password" id="cloudinarySecret" placeholder="API Secret..." />
-        <p class="hint-text">Trovali su cloudinary.com → Dashboard → API Keys</p>
+        <label class="field-label">Cloudinary Tag galleria</label>
+        <input class="token-input" type="text" id="cloudinaryTag" placeholder="instagram" value="instagram" />
+        <p class="hint-text">Tag da usare per filtrare le foto. Abilita "Resource list" in Cloudinary → Settings → Security.</p>
       </div>
       <button class="btn" onclick="saveSettings()">Salva impostazioni</button>
       <div id="settingsStatus" class="status-bar"></div>
@@ -489,14 +486,12 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     const k = localStorage.getItem('cm_anthropic_key');
     const u = localStorage.getItem('cm_ig_userid');
     const cc = localStorage.getItem('cm_cloudinary_cloud');
-    const ck = localStorage.getItem('cm_cloudinary_key');
-    const cs = localStorage.getItem('cm_cloudinary_secret');
+    const ct = localStorage.getItem('cm_cloudinary_tag');
     if (t) document.getElementById('igToken').value = t;
     if (k) document.getElementById('anthropicKey').value = k;
     if (u) document.getElementById('igUserId').value = u;
     if (cc) document.getElementById('cloudinaryCloud').value = cc;
-    if (ck) document.getElementById('cloudinaryKey').value = ck;
-    if (cs) document.getElementById('cloudinarySecret').value = cs;
+    if (ct) document.getElementById('cloudinaryTag').value = ct;
   }
 
   function saveSettings() {
@@ -504,8 +499,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     localStorage.setItem('cm_anthropic_key', document.getElementById('anthropicKey').value.trim());
     localStorage.setItem('cm_ig_userid', document.getElementById('igUserId').value.trim());
     localStorage.setItem('cm_cloudinary_cloud', document.getElementById('cloudinaryCloud').value.trim());
-    localStorage.setItem('cm_cloudinary_key', document.getElementById('cloudinaryKey').value.trim());
-    localStorage.setItem('cm_cloudinary_secret', document.getElementById('cloudinarySecret').value.trim());
+    localStorage.setItem('cm_cloudinary_tag', document.getElementById('cloudinaryTag').value.trim() || 'instagram');
     showStatus('settingsStatus', 'Impostazioni salvate', 'success');
   }
 
@@ -524,39 +518,30 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   }
 
   async function loadCloudinaryGallery() {
-    const cloud = localStorage.getItem('cm_cloudinary_cloud') || document.getElementById('cloudinaryCloud').value.trim();
-    const key   = localStorage.getItem('cm_cloudinary_key')   || document.getElementById('cloudinaryKey').value.trim();
-    const secret= localStorage.getItem('cm_cloudinary_secret')|| document.getElementById('cloudinarySecret').value.trim();
-    if (!cloud || !key || !secret) {
-      showStatus('cloudinaryStatus', 'Inserisci Cloud Name, API Key e API Secret nelle impostazioni', 'error');
+    const cloud = document.getElementById('cloudinaryCloud').value.trim() || localStorage.getItem('cm_cloudinary_cloud');
+    const tag   = document.getElementById('cloudinaryTag').value.trim()   || localStorage.getItem('cm_cloudinary_tag') || 'instagram';
+    if (!cloud) {
+      showStatus('cloudinaryStatus', 'Inserisci il Cloud Name nelle impostazioni', 'error');
       return;
     }
     document.getElementById('cloudinarySpinner').style.display = 'inline-block';
     document.getElementById('cloudinaryCount').textContent = '';
     showStatus('cloudinaryStatus', '', '');
     try {
-      const creds = btoa(`${key}:${secret}`);
-      let resources = [], nextCursor = null;
-      do {
-        const url = `https://api.cloudinary.com/v1_1/${cloud}/resources/image?max_results=100${nextCursor ? '&next_cursor=' + nextCursor : ''}`;
-        const res = await fetch(url, { headers: { 'Authorization': `Basic ${creds}` } });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error?.message || `HTTP ${res.status}`);
-        }
-        const data = await res.json();
-        resources = resources.concat(data.resources || []);
-        nextCursor = data.next_cursor || null;
-      } while (nextCursor && resources.length < 500);
-
+      const url = `https://res.cloudinary.com/${cloud}/image/list/${tag}.json`;
+      const res = await fetch(url);
+      if (res.status === 404) throw new Error(`Nessuna foto con tag "${tag}", o "Resource list" non abilitato in Cloudinary → Settings → Security`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const resources = data.resources || [];
       const grid = document.getElementById('cloudinaryGrid');
       if (!resources.length) {
-        grid.innerHTML = '<p class="imgbb-empty">Nessuna foto trovata su Cloudinary</p>';
+        grid.innerHTML = `<p class="imgbb-empty">Nessuna foto con tag "${tag}"</p>`;
         return;
       }
       grid.innerHTML = resources.map(r => {
-        const thumb = `https://res.cloudinary.com/${cloud}/image/upload/w_200,h_200,c_fill/${r.public_id}.jpg`;
-        const full  = r.secure_url;
+        const thumb = `https://res.cloudinary.com/${cloud}/image/upload/w_200,h_200,c_fill/${r.public_id}.${r.format}`;
+        const full  = `https://res.cloudinary.com/${cloud}/image/upload/${r.public_id}.${r.format}`;
         const name  = r.public_id.split('/').pop();
         return `<div class="imgbb-thumb" onclick="selectCloudinaryPhoto('${full}', this)" title="${name}">
           <img src="${thumb}" loading="lazy" />
