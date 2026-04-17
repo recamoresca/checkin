@@ -435,11 +435,11 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   let selectedHashtags = new Set();
 
   const defaultHashtags = [
-    '#casamoresca', '#relaiscastmoresca', '#terracina', '#portobadino',
-    '#riviераdulisse', '#lazio', '#villaluxury', '#seaview', '#italyvacation',
-    '#mediterraneo', '#vacanzeitalia', '#villaaffitto', '#beachhouse',
-    '#isoladiponza', '#italytravel', '#relaxitaly', '#villamediterranea',
-    '#giardino', '#luxuryvilla', '#sabaudia', '#spiaggiaprivata'
+    '#RelaisCasaMoresca', '#Terracina', '#Lazio', '#Italia', '#VacanzeEsclusive',
+    'EarlyBooker', '#TravelItaly', 'VisitLazio', 'BoutiqueHotel', '#LuxuryTravel',
+    'ViaggioItalia', 'MediterraneanVibes', 'DreamGetaway', '#ItaliaVacanza',
+    'EstateItaliana', '#DesignHotel', 'UnforgettableExperiences', 'LuxuryRelais',
+    'SpiaggiaPrivata', 'Estate2026'
   ];
 
   function loadSettings() {
@@ -606,33 +606,40 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 
 IDENTITÀ DEL BRAND:
 - Architettura moresca: tre grandi archi del Patio, calce bianca, inserti in maiolica
-- 3 camere: Canfora, Catalpa, Paulonia
-- Giardino privato 500mq con Tea Corner, Patio, area relax, BBQ
+- 3 camere: Canfora, Catalpa, Paulonia (nominate dagli alberi del giardino)
+- Giardino privato 500mq: Tea Corner, Patio, area relax con chaise-longue, BBQ
 - Spiaggia privata esclusiva (stabilimento Venerelli)
+- A pochi minuti da: Sabaudia, San Felice Circeo, Sperlonga
 - Escursioni alle Isole Pontine: Ponza, Ventotene, Palmarola
-- Vicino a Sabaudia, San Felice Circeo, Sperlonga
 - Prenotazioni su bnbcasamoresca.com
 
-STILE DEI POST (segui ESATTAMENTE questo formato, è lo stile del profilo):
-1. Prime due righe: 🇮🇹 **TITOLO ITALIANO IN BOLD UNICODE MAIUSCOLO** + emoji\n🇬🇧 **ENGLISH TITLE IN BOLD UNICODE CAPS** + emoji (su riga separata)
-2. Corpo in italiano: 2-3 frasi aspirazionali, tono raffinato e marketing (NON poetico). "esperienza indimenticabile", "rifugio di qualità", "comfort esclusivo", "privacy assoluta" ecc.
-3. CTA italiana: ➡️ [frase d'azione breve]. Link in Bio.
-4. Riga vuota, poi: 🇬🇧 corpo in inglese (traduzione del corpo IT, stessa lunghezza)
-5. CTA inglese: ➡️ [English action phrase]. Link in Bio.
-6. Eventuale: 💎 Salva questo post per ricordarti dove prenotare! / 💎 Save this post to remind yourself where to book!
+VOCABOLARIO RICORRENTE DEL BRAND (usa queste espressioni):
+IT: "rifugio esclusivo/personale", "comfort superiore/assoluto", "design raffinato", "benessere", "esperienza indimenticabile", "non è solo un soggiorno, è un'esperienza", "ti aspetta", "Riviera di Ulisse", "a pochi passi dal mare", "l'atmosfera pensata per chi cerca solo il meglio"
+EN: "exclusive retreat/hideaway", "unparalleled luxury experience", "breathtaking views", "refined design", "it's not just a stay, it's an experience", "awaits you", "just steps from the sea"
 
-TITOLI: sempre MAIUSCOLI, usa ** intorno al testo per il bold Unicode (verranno convertiti automaticamente)
+STRUTTURA ESATTA DEL POST (rispetta questo formato):
+Riga 1: 🇮🇹 **TITOLO ITALIANO IN CAPS** [emoji]
+Riga 2: 🇬🇧 **ENGLISH TITLE IN CAPS** [emoji]
+Riga vuota
+🇮🇹 Corpo italiano: 2-3 frasi. Prima frase evocativa (scena/mood). Seconda frase che cita il relais e un elemento specifico. Terza frase chiusura emotiva tipo "non è solo un soggiorno, è un'esperienza" o "il tuo rifugio ti aspetta".
+➡️ **CTA italiana in bold.** Link in Bio.
+Riga vuota
+🇬🇧 Corpo inglese: traduzione fedele del corpo IT, stessa struttura.
+➡️ **English CTA in bold.** Link in Bio.
 
-${offerBlock ? "OFFERTA: quando c'è un'offerta, citala con urgency nel corpo del testo (sconto, scadenza, disponibilità limitate)." : ""}
+TONO: aspirazionale, raffinato, marketing premium — NON poetico letterario, NON elenco di servizi
+EMOJI: usale con parsimonia, solo dove aggiungono significato (🌅 🌊 🌿 🏖️ ✨ 💎 🍷)
 
-Crea una caption Instagram per questa scena: "${scene}"${offerBlock}
+${offerBlock ? "OFFERTA: integra l'offerta nel corpo del testo IT con urgency (scadenza, disponibilità limitate). Replica in EN." : ""}
+
+Scena/contesto: "${scene}"${offerBlock}
 
 Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
 {
-  "it": "🇮🇹 **TITOLO ITALIANO IN CAPS** 🏖️\n🇬🇧 **ENGLISH TITLE IN CAPS** 🏖️\n\nCorpo italiano 2-3 frasi aspirazionali.\n\n➡️ CTA italiana. Link in Bio.\n\n🇬🇧 English body 2-3 sentences.\n\n➡️ English CTA. Link in Bio.",
+  "it": "🇮🇹 **TITOLO ITALIANO IN CAPS** 🌅\n🇬🇧 **ENGLISH TITLE IN CAPS** 🌅\n\n🇮🇹 Corpo italiano 2-3 frasi. Non è solo un soggiorno, è un'esperienza.\n➡️ **Prenota la tua estate 2026!** Link in Bio.\n\n🇬🇧 English body 2-3 sentences. It's not just a stay, it's an experience.\n➡️ **Book your Summer 2026!** Link in Bio.",
   "en": "(stesso testo della caption it, è già bilingue)",
   "de": "(stesso testo della caption it)",
-  "hashtags": ["#RelaisCasaMoresca", "#Terracina", "#Lazio", "#VacanzeEsclusive", "#LuxuryVilla", "#ItalyTravel", "#MediterraneanVibes", "#BoutiqueHotel", "#VisitLazio", "#Portobadino", "#RivieradiUlisse", "#VillaEsclusiva", "#ItaliaVacanza", "#EstateItaliana", "#DreamGetaway"]
+  "hashtags": ["#RelaisCasaMoresca", "#Terracina", "#Lazio", "#Italia", "#VacanzeEsclusive", "EarlyBooker", "#TravelItaly", "VisitLazio", "BoutiqueHotel", "#LuxuryTravel", "ViaggioItalia", "MediterraneanVibes", "DreamGetaway", "#ItaliaVacanza", "EstateItaliana", "#DesignHotel", "UnforgettableExperiences", "LuxuryRelais", "SpiaggiaPrivata", "Estate2026"]
 }`
           }]
         })
