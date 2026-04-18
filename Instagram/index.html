@@ -243,6 +243,13 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 .imgbb-empty{font-size:12px;color:var(--muted);text-align:center;padding:2rem;grid-column:1/-1}
 .imgbb-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:12px;line-height:18px;text-align:center;cursor:pointer;padding:0;display:none}
 .imgbb-thumb:hover .imgbb-del{display:block}
+.imgbb-thumb .sel-badge{position:absolute;top:3px;left:3px;background:var(--arch);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center}
+.imgbb-thumb.selected .sel-badge{display:flex}
+/* MULTI PREVIEW */
+.multi-preview{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px}
+.multi-thumb{position:relative;flex-shrink:0;width:76px;height:76px;border-radius:8px;overflow:hidden;border:2px solid var(--border)}
+.multi-thumb img{width:100%;height:100%;object-fit:cover}
+.multi-thumb .rm-btn{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;cursor:pointer;padding:0}
 
 </style>
 </head>
@@ -282,6 +289,11 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
         <input class="token-input" type="text" id="igUserId" value="17841400924386592" />
       </div>
       <div class="field-group">
+        <label class="field-label">imgbb API Key</label>
+        <input class="token-input" type="password" id="imgbbKey" placeholder="chiave API imgbb..." />
+        <p class="hint-text">Necessaria per pubblicare foto caricate dal PC. imgbb.com → Account → API</p>
+      </div>
+      <div class="field-group">
         <label class="field-label">Google Drive API Key</label>
         <input class="token-input" type="password" id="driveApiKey" placeholder="AIza..." />
         <p class="hint-text">console.cloud.google.com → Abilita Drive API → Crea API Key</p>
@@ -319,10 +331,10 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
         <div class="upload-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
         </div>
-        <p>Clicca per caricare una foto</p>
-        <p class="hint">JPG o PNG — max 8MB</p>
+        <p>Clicca per caricare foto</p>
+        <p class="hint">JPG o PNG · Seleziona più foto per il carosello</p>
       </div>
-      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)" />
+      <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFile(event)" />
     </div>
 
     <div id="tabUrl" style="display:none">
@@ -471,6 +483,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 
 <script>
   let currentImageUrl = null;
+  let selectedPhotos = []; // [{src, name}]
   let selectedHashtags = new Set();
 
   const defaultHashtags = [
@@ -485,11 +498,13 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     const t  = localStorage.getItem('cm_ig_token');
     const k  = localStorage.getItem('cm_anthropic_key');
     const u  = localStorage.getItem('cm_ig_userid');
+    const ib = localStorage.getItem('cm_imgbb_key');
     const dk = localStorage.getItem('cm_drive_api_key');
     const df = localStorage.getItem('cm_drive_folder_id');
     if (t)  document.getElementById('igToken').value = t;
     if (k)  document.getElementById('anthropicKey').value = k;
     if (u)  document.getElementById('igUserId').value = u;
+    if (ib) document.getElementById('imgbbKey').value = ib;
     if (dk) document.getElementById('driveApiKey').value = dk;
     if (df) document.getElementById('driveFolderId').value = df;
   }
@@ -498,6 +513,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     localStorage.setItem('cm_ig_token',        document.getElementById('igToken').value.trim());
     localStorage.setItem('cm_anthropic_key',   document.getElementById('anthropicKey').value.trim());
     localStorage.setItem('cm_ig_userid',       document.getElementById('igUserId').value.trim());
+    localStorage.setItem('cm_imgbb_key',       document.getElementById('imgbbKey').value.trim());
     localStorage.setItem('cm_drive_api_key',   document.getElementById('driveApiKey').value.trim());
     localStorage.setItem('cm_drive_folder_id', document.getElementById('driveFolderId').value.trim());
     showStatus('settingsStatus', 'Impostazioni salvate', 'success');
@@ -546,8 +562,10 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
       grid.innerHTML = files.map(f => {
         const thumb = `https://drive.google.com/thumbnail?id=${f.id}&sz=w200-h200`;
         const full  = `https://lh3.googleusercontent.com/d/${f.id}`;
-        return `<div class="imgbb-thumb" onclick="selectDrivePhoto('${full}', this)" title="${f.name}">
+        const name  = f.name;
+        return `<div class="imgbb-thumb" onclick="selectDrivePhoto('${full}','${name.replace(/'/g,'')}',this)" title="${name}">
           <img src="${thumb}" loading="lazy" />
+          <span class="sel-badge">✓</span>
         </div>`;
       }).join('');
       document.getElementById('driveCount').textContent = `${files.length} foto`;
@@ -558,12 +576,16 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     }
   }
 
-  function selectDrivePhoto(url, el) {
-    document.querySelectorAll('.imgbb-thumb').forEach(t => t.classList.remove('selected'));
-    el.classList.add('selected');
-    currentImageUrl = url;
-    window._uploadedDataUrl = null;
-    document.getElementById('previewArea').innerHTML = `<img class="preview-img" src="${url}" />`;
+  function selectDrivePhoto(url, name, el) {
+    const idx = selectedPhotos.findIndex(p => p.src === url);
+    if (idx >= 0) {
+      selectedPhotos.splice(idx, 1);
+      el.classList.remove('selected');
+    } else {
+      selectedPhotos.push({ src: url, name });
+      el.classList.add('selected');
+    }
+    renderSelectedPhotos();
   }
 
   function selectImgbbPhoto(url, el) {
@@ -581,24 +603,52 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     document.getElementById('pubSchedBtn').classList.toggle('active', tab === 'schedule');
   }
 
+  function renderSelectedPhotos() {
+    const area = document.getElementById('previewArea');
+    if (!selectedPhotos.length) {
+      area.innerHTML = '<div class="preview-empty">Nessuna foto selezionata</div>';
+      currentImageUrl = null; window._uploadedDataUrl = null;
+      return;
+    }
+    const first = selectedPhotos[0];
+    currentImageUrl = first.src.startsWith('data:') ? null : first.src;
+    window._uploadedDataUrl = first.src.startsWith('data:') ? first.src : null;
+    if (selectedPhotos.length === 1) {
+      area.innerHTML = `<img class="preview-img" src="${first.src}" />`;
+    } else {
+      area.innerHTML = `<div class="multi-preview">${selectedPhotos.map((p,i) =>
+        `<div class="multi-thumb"><img src="${p.src}" /><button class="rm-btn" onclick="removePhoto(${i})">×</button></div>`
+      ).join('')}</div><p class="hint-text" style="text-align:center;margin-top:6px">${selectedPhotos.length} foto — verrà pubblicato come Carosello</p>`;
+    }
+  }
+
+  function removePhoto(idx) {
+    selectedPhotos.splice(idx, 1);
+    renderSelectedPhotos();
+    document.querySelectorAll('.imgbb-thumb').forEach((el, i) => {
+      // re-sync drive selection badges
+    });
+  }
+
   function handleFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      currentImageUrl = null;
-      window._uploadedDataUrl = ev.target.result;
-      document.getElementById('previewArea').innerHTML = `<img class="preview-img" src="${ev.target.result}" />`;
-    };
-    reader.readAsDataURL(file);
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        selectedPhotos.push({ src: ev.target.result, name: file.name });
+        renderSelectedPhotos();
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
   }
 
   function loadFromUrl() {
     const url = document.getElementById('imageUrl').value.trim();
     if (!url) return;
-    currentImageUrl = url;
-    window._uploadedDataUrl = null;
-    document.getElementById('previewArea').innerHTML = `<img class="preview-img" src="${url}" onerror="this.style.display='none'" />`;
+    selectedPhotos = [{ src: url, name: url.split('/').pop() }];
+    renderSelectedPhotos();
   }
 
 
@@ -811,6 +861,32 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
     return null;
   }
 
+  async function uploadToImgbb(dataUrl) {
+    const apiKey = document.getElementById('imgbbKey').value.trim() || localStorage.getItem('cm_imgbb_key');
+    if (!apiKey) throw new Error('Aggiungi la imgbb API Key nelle impostazioni per pubblicare foto caricate dal PC');
+    const fd = new FormData();
+    fd.append('key', apiKey);
+    fd.append('image', dataUrl.split(',')[1]);
+    const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error?.message || 'Upload imgbb fallito');
+    return data.data.url;
+  }
+
+  async function resolvePublicUrls() {
+    for (const p of selectedPhotos) {
+      if (p.publicUrl) continue;
+      if (p.src.startsWith('data:')) {
+        p.publicUrl = await uploadToImgbb(p.src);
+      } else if (p.src.includes('lh3.googleusercontent.com/d/')) {
+        const fileId = p.src.split('/d/')[1].split('?')[0];
+        p.publicUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+      } else {
+        p.publicUrl = p.src;
+      }
+    }
+  }
+
   async function igFetch(path, params) {
     const body = new URLSearchParams(params);
     const res = await fetch(`https://graph.facebook.com/v21.0${path}`, {
@@ -826,6 +902,7 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
     const token = document.getElementById('igToken').value.trim();
     const userId = document.getElementById('igUserId').value.trim();
     if (!token) { showStatus('statusBar', 'Inserisci il token Instagram nelle impostazioni', 'error'); return; }
+    if (!selectedPhotos.length && currentContentType !== 'reel') { showStatus('statusBar', 'Seleziona almeno una foto', 'error'); return; }
 
     const caption = getFinalCaption();
     document.getElementById('pubSpinner').style.display = 'inline-block';
@@ -848,22 +925,39 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
         showStatus('statusBar', '✓ Reel pubblicato su @relais_casa_moresca!', 'success');
 
       } else if (currentContentType === 'story') {
-        const imageUrl = getPublishImageUrl();
-        if (!imageUrl) { showStatus('statusBar', 'Inserisci un URL pubblico dell\'immagine per la Storia', 'error'); return; }
+        showStatus('statusBar', 'Preparazione immagine...', 'info');
+        await resolvePublicUrls();
+        const imageUrl = selectedPhotos[0]?.publicUrl;
+        if (!imageUrl) { showStatus('statusBar', 'Errore nel preparare l\'immagine', 'error'); return; }
         showStatus('statusBar', 'Pubblicazione Storia...', 'info');
         const d1 = await igFetch(`/${userId}/media`, { media_type: 'STORIES', image_url: imageUrl, access_token: token });
         await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
         showStatus('statusBar', '✓ Storia pubblicata su @relais_casa_moresca!', 'success');
 
       } else {
-        const imageUrl = getPublishImageUrl();
-        if (!imageUrl) { showStatus('statusBar', 'Per pubblicare serve un URL pubblico dell\'immagine', 'error'); return; }
         if (!caption.trim()) { showStatus('statusBar', 'Scrivi o genera una caption prima di pubblicare', 'error'); return; }
-        showStatus('statusBar', 'Creazione container post...', 'info');
-        const d1 = await igFetch(`/${userId}/media`, { image_url: imageUrl, caption, access_token: token });
-        showStatus('statusBar', 'Pubblicazione in corso...', 'info');
-        await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
-        showStatus('statusBar', '✓ Post pubblicato su @relais_casa_moresca!', 'success');
+        showStatus('statusBar', 'Preparazione immagini...', 'info');
+        await resolvePublicUrls();
+        const urls = selectedPhotos.map(p => p.publicUrl).filter(Boolean);
+        if (!urls.length) { showStatus('statusBar', 'Errore nel preparare le immagini', 'error'); return; }
+
+        if (urls.length > 1) {
+          showStatus('statusBar', `Caricamento ${urls.length} foto per il carosello...`, 'info');
+          const childIds = [];
+          for (const imgUrl of urls) {
+            const c = await igFetch(`/${userId}/media`, { image_url: imgUrl, is_carousel_item: 'true', access_token: token });
+            childIds.push(c.id);
+          }
+          showStatus('statusBar', 'Creazione carosello...', 'info');
+          const carousel = await igFetch(`/${userId}/media`, { media_type: 'CAROUSEL', children: childIds.join(','), caption, access_token: token });
+          await igFetch(`/${userId}/media_publish`, { creation_id: carousel.id, access_token: token });
+          showStatus('statusBar', `✓ Carosello (${urls.length} foto) pubblicato su @relais_casa_moresca!`, 'success');
+        } else {
+          showStatus('statusBar', 'Creazione container post...', 'info');
+          const d1 = await igFetch(`/${userId}/media`, { image_url: urls[0], caption, access_token: token });
+          await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
+          showStatus('statusBar', '✓ Post pubblicato su @relais_casa_moresca!', 'success');
+        }
       }
     } catch (e) {
       showStatus('statusBar', 'Errore: ' + e.message, 'error');
