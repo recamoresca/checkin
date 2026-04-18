@@ -925,14 +925,17 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
         showStatus('statusBar', '✓ Reel pubblicato su @relais_casa_moresca!', 'success');
 
       } else if (currentContentType === 'story') {
-        showStatus('statusBar', 'Preparazione immagine...', 'info');
+        showStatus('statusBar', 'Preparazione immagini...', 'info');
         await resolvePublicUrls();
-        const imageUrl = selectedPhotos[0]?.publicUrl;
-        if (!imageUrl) { showStatus('statusBar', 'Errore nel preparare l\'immagine', 'error'); return; }
-        showStatus('statusBar', 'Pubblicazione Storia...', 'info');
-        const d1 = await igFetch(`/${userId}/media`, { media_type: 'STORIES', image_url: imageUrl, access_token: token });
-        await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
-        showStatus('statusBar', '✓ Storia pubblicata su @relais_casa_moresca!', 'success');
+        const urls = selectedPhotos.map(p => p.publicUrl).filter(Boolean);
+        if (!urls.length) { showStatus('statusBar', 'Errore nel preparare le immagini', 'error'); return; }
+        for (let i = 0; i < urls.length; i++) {
+          showStatus('statusBar', `Pubblicazione storia ${i+1} di ${urls.length}...`, 'info');
+          const d1 = await igFetch(`/${userId}/media`, { media_type: 'STORIES', image_url: urls[i], access_token: token });
+          await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
+        }
+        const nota = urls.length > 1 ? ` (${urls.length} storie)` : '';
+        showStatus('statusBar', `✓ Storie pubblicate${nota}! Nota: le caption non sono supportate nelle Storie dall\'API Instagram.`, 'success');
 
       } else {
         if (!caption.trim()) { showStatus('statusBar', 'Scrivi o genera una caption prima di pubblicare', 'error'); return; }
