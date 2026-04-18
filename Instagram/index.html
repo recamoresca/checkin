@@ -873,6 +873,39 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
     return data.data.url;
   }
 
+  function cropTo9x16(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const W = 1080, H = 1920;
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, W, H);
+        const srcAspect = img.width / img.height;
+        const tgtAspect = W / H;
+        let dw, dh, dx, dy;
+        if (srcAspect > tgtAspect) {
+          dh = H; dw = H * srcAspect; dx = (W - dw) / 2; dy = 0;
+        } else {
+          dw = W; dh = W / srcAspect; dx = 0; dy = (H - dh) / 2;
+        }
+        ctx.drawImage(img, dx, dy, dw, dh);
+        resolve(canvas.toDataURL('image/jpeg', 0.92));
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  async function toDataUrl(src) {
+    if (src.startsWith('data:')) return src;
+    const blob = await fetch(src).then(r => r.blob());
+    return new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(blob); });
+  }
+
   async function resolvePublicUrls() {
     for (const p of selectedPhotos) {
       if (p.publicUrl) continue;
@@ -925,16 +958,22 @@ Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown:
         showStatus('statusBar', '✓ Reel pubblicato su @relais_casa_moresca!', 'success');
 
       } else if (currentContentType === 'story') {
-        showStatus('statusBar', 'Preparazione immagini...', 'info');
-        await resolvePublicUrls();
-        const urls = selectedPhotos.map(p => p.publicUrl).filter(Boolean);
-        if (!urls.length) { showStatus('statusBar', 'Errore nel preparare le immagini', 'error'); return; }
-        for (let i = 0; i < urls.length; i++) {
-          showStatus('statusBar', `Pubblicazione storia ${i+1} di ${urls.length}...`, 'info');
-          const d1 = await igFetch(`/${userId}/media`, { media_type: 'STORIES', image_url: urls[i], access_token: token });
+        showStatus('statusBar', 'Adattamento foto al formato 9:16...', 'info');
+        const storyUrls = [];
+        for (const p of selectedPhotos) {
+          const dataUrl = await toDataUrl(p.src.startsWith('data:') ? p.src :
+            p.src.includes('lh3.googleusercontent.com/d/') ?
+              `https://drive.google.com/uc?export=view&id=${p.src.split('/d/')[1].split('?')[0]}` : p.src);
+          const cropped = await cropTo9x16(dataUrl);
+          const pubUrl = await uploadToImgbb(cropped);
+          storyUrls.push(pubUrl);
+        }
+        for (let i = 0; i < storyUrls.length; i++) {
+          showStatus('statusBar', `Pubblicazione storia ${i+1} di ${storyUrls.length}...`, 'info');
+          const d1 = await igFetch(`/${userId}/media`, { media_type: 'STORIES', image_url: storyUrls[i], access_token: token });
           await igFetch(`/${userId}/media_publish`, { creation_id: d1.id, access_token: token });
         }
-        const nota = urls.length > 1 ? ` (${urls.length} storie)` : '';
+        const nota = storyUrls.length > 1 ? ` (${storyUrls.length} storie)` : '';
         showStatus('statusBar', `✓ Storie pubblicate${nota}! Nota: le caption non sono supportate nelle Storie dall\'API Instagram.`, 'success');
 
       } else {
