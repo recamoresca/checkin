@@ -308,7 +308,8 @@ async function kvLoad(){
   try{
     const r = await fetch(`${KV_BASE}/load?key=${KV_KEY}`);
     if(!r.ok) return;
-    const d = await r.json();
+    const txt = await r.text();
+    let d; try{ d=JSON.parse(txt); }catch{ d=[]; }
     if(Array.isArray(d) && d.length >= entries.length){ entries=d; sPN(entries); }
     setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));
   }catch{ setSyncBar('⚠️ Offline — dati locali') }
@@ -319,7 +320,7 @@ async function kvSave(){
     await fetch(`${KV_BASE}/save`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({key:KV_KEY,value:entries})
+      body:JSON.stringify({key:KV_KEY,data:entries})
     });
   }catch{}
 }
