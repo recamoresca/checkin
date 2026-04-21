@@ -277,19 +277,37 @@ const KV_KEY  = 'rcm_pn26';
 
 const CATS = {
   entrata: [
-    { id:'incassi',      icon:'💰', name:'Incassi',           sub:null },
-    { id:'altro-ent',    icon:'➕', name:'Altro entrata',     sub:null },
+    { id:'incassi', icon:'💰', name:'Incassi', sub:null },
   ],
   uscita: [
-    { id:'personale',    icon:'👤', name:'Personale',         sub:['Joele','Mauro','Livia'] },
-    { id:'commissioni',  icon:'🏷️', name:'Commissioni',       sub:['OTA','Stripe','Cedolare'] },
-    { id:'produzione',   icon:'🔧', name:'Produzione',        sub:null },
-    { id:'biancheria',   icon:'🛏️', name:'Biancheria',        sub:null },
-    { id:'ospiti',       icon:'🧴', name:'Dotazioni ospiti',  sub:null },
-    { id:'pulizie',      icon:'🧹', name:'Pulizie',           sub:null },
-    { id:'manutenzione', icon:'🪛', name:'Manutenzione',      sub:null },
-    { id:'altro-usc',   icon:'📦', name:'Altro uscita',     sub:null },
+    { id:'personale',    icon:'👤', name:'Personale',              sub:['Joele','Mauro','Livia'] },
+    { id:'produzione',   icon:'🔧', name:'Produzione',             sub:['Commissioni OTA/Stripe/Ced.','Biancheria','Dotazioni ospiti'] },
+    { id:'manutenzione', icon:'🔨', name:'Manutenzione e Migliorie', sub:['Decor e migliorie','Manutenzione'] },
+    { id:'diffusione',   icon:'📣', name:'Diffusione',             sub:['Pubblicità online','Sito/Dominio/Channel Mgr'] },
+    { id:'spese-fisse',  icon:'🏠', name:'Spese fisse',            sub:['Condominio','Giardino','Spiaggia','Utenze'] },
   ]
+};
+
+// Mappa sub → colonna CSV (stesso ordine del foglio Google)
+const CSV_COLS = [
+  'Data','Fornitore','Bene acquistato',
+  'Joele','Mauro','Livia',
+  'Incassi',
+  'Commissioni OTA - Stripe - Cedolare','Biancheria','Dotazioni ospiti',
+  'Decor e migliorie','Manutenzione',
+  'Diffusione e pubblicità online','Sito - Dominio - Channel Manager',
+  'Condominio','Giardino','Spiaggia','Utenze'
+];
+const SUB_TO_COL = {
+  'Joele':'Joele','Mauro':'Mauro','Livia':'Livia',
+  'Commissioni OTA/Stripe/Ced.':'Commissioni OTA - Stripe - Cedolare',
+  'Biancheria':'Biancheria','Dotazioni ospiti':'Dotazioni ospiti',
+  'Decor e migliorie':'Decor e migliorie','Manutenzione':'Manutenzione',
+  'Pubblicità online':'Diffusione e pubblicità online',
+  'Sito/Dominio/Channel Mgr':'Sito - Dominio - Channel Manager',
+  'Condominio':'Condominio','Giardino':'Giardino',
+  'Spiaggia':'Spiaggia','Utenze':'Utenze',
+  'Incassi':'Incassi'
 };
 
 // ── STATE ─────────────────────────────────────────────
@@ -565,13 +583,20 @@ function renderDash(){
 
 // ── CSV EXPORT ────────────────────────────────────────
 function exportCSV(){
-  const hdr=['Data','Fornitore','Descrizione','Tipo','Categoria','Sottocategoria','Importo (€)'];
-  const rows=[...entries].sort((a,b)=>a.data.localeCompare(b.data)).map(e=>[
-    e.data,e.forn||'',e.desc||'',e.tipo,
-    catName(e.tipo,e.cat),e.sub||'',
-    (e.tipo==='uscita'?'-':'')+e.importo.toFixed(2).replace('.',',')
-  ]);
-  const csv=[hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const dataRows=[...entries].sort((a,b)=>a.data.localeCompare(b.data)).map(e=>{
+    const row={};
+    CSV_COLS.forEach(c=>row[c]='');
+    row['Data']=e.data;
+    row['Fornitore']=e.forn||'';
+    row['Bene acquistato']=e.desc||'';
+    const colKey = e.tipo==='entrata'?'Incassi':(e.sub?SUB_TO_COL[e.sub]:null);
+    if(colKey && row.hasOwnProperty(colKey)){
+      const sign = e.tipo==='uscita'?'-':'';
+      row[colKey]=sign+e.importo.toFixed(2).replace('.',',');
+    }
+    return CSV_COLS.map(c=>row[c]);
+  });
+  const csv=[CSV_COLS,...dataRows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
   a.download=`prima-nota-${todayS()}.csv`; a.click();
