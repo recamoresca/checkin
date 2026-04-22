@@ -188,21 +188,27 @@ body{font-family:'Raleway',sans-serif;background:var(--calce);color:var(--ink);f
 
 <!-- FORM -->
 <div class="screen slide-r" id="screen-form" style="background:var(--calce)">
-  <div class="sect-hdr">
-    <button class="sect-back" onclick="showScr('screen-home')">← Indietro</button>
-    <div class="sect-title" id="form-title">Nuova voce</div>
-  </div>
-  <div class="sect-body">
-    <div class="scan-wrap">
-      <button class="sbtn" id="btn-ent" onclick="setTipo('entrata')">
-        <div class="sico">↑</div>
-        <div><strong>Entrata</strong><small>Incassi e proventi</small></div>
+  <div class="home-hdr">
+    <div style="display:flex;align-items:center;gap:10px;padding:2px 0 8px">
+      <button onclick="showScr('screen-home')"
+        style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--muted);padding:4px 0;line-height:1;flex-shrink:0">←</button>
+      <div>
+        <div id="form-title" style="font-size:22px;font-weight:700;color:var(--arch);letter-spacing:.02em">Nuova voce</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:1px">Prima Nota</div>
+      </div>
+    </div>
+    <div class="hdr-sub-strip" style="gap:8px">
+      <button class="sbtn" id="btn-ent" onclick="setTipo('entrata')" style="flex:1;padding:9px 10px">
+        <div class="sico" style="width:32px;height:32px;font-size:16px">↑</div>
+        <div><strong style="font-size:13px">Entrata</strong><small>Incassi</small></div>
       </button>
-      <button class="sbtn" id="btn-usc" onclick="setTipo('uscita')">
-        <div class="sico">↓</div>
-        <div><strong>Uscita</strong><small>Costi e spese</small></div>
+      <button class="sbtn" id="btn-usc" onclick="setTipo('uscita')" style="flex:1;padding:9px 10px">
+        <div class="sico" style="width:32px;height:32px;font-size:16px">↓</div>
+        <div><strong style="font-size:13px">Uscita</strong><small>Spese</small></div>
       </button>
     </div>
+  </div>
+  <div class="sect-body">
     <div class="field">
       <label>Importo</label>
       <div class="imp-wrap">
@@ -239,9 +245,15 @@ body{font-family:'Raleway',sans-serif;background:var(--calce);color:var(--ink);f
 
 <!-- DASHBOARD -->
 <div class="screen slide-r" id="screen-dash" style="background:var(--calce)">
-  <div class="sect-hdr">
-    <button class="sect-back" onclick="showScr('screen-home')">← Indietro</button>
-    <div class="sect-title">📊 Riepilogo stagione</div>
+  <div class="home-hdr">
+    <div style="display:flex;align-items:center;gap:10px;padding:2px 0 8px">
+      <button onclick="showScr('screen-home')"
+        style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--muted);padding:4px 0;line-height:1;flex-shrink:0">←</button>
+      <div>
+        <div style="font-size:22px;font-weight:700;color:var(--arch);letter-spacing:.02em">📊 Riepilogo</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:1px">Stagione 2026</div>
+      </div>
+    </div>
   </div>
   <div class="sect-body" id="dash-body"></div>
 </div>
