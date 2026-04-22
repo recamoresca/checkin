@@ -12,29 +12,43 @@ const CATS={
 const CSV_COLS=['Data','Fornitore','Bene acquistato','Joele','Mauro','Livia','Incassi','Commissioni OTA - Stripe - Cedolare','Biancheria','Dotazioni ospiti','Decor e migliorie','Manutenzione','Diffusione e pubblicità online','Sito - Dominio - Channel Manager','Condominio','Giardino','Spiaggia','Utenze'];
 const S2C={'Joele':'Joele','Mauro':'Mauro','Livia':'Livia','Commissioni OTA/Stripe/Ced.':'Commissioni OTA - Stripe - Cedolare','Biancheria':'Biancheria','Dotazioni ospiti':'Dotazioni ospiti','Decor e migliorie':'Decor e migliorie','Manutenzione':'Manutenzione','Pubblicità online':'Diffusione e pubblicità online','Sito/Dominio/Channel Mgr':'Sito - Dominio - Channel Manager','Condominio':'Condominio','Giardino':'Giardino','Spiaggia':'Spiaggia','Utenze':'Utenze','Incassi':'Incassi'};
 
-const lPN=()=>{try{return JSON.parse(localStorage.getItem(KV_KEY)||'[]')}catch{return[]}};
-const sPN=d=>localStorage.setItem(KV_KEY,JSON.stringify(d));
-let entries=lPN(),tipo='uscita',selCat=null,selSub=null,editId=null,detId=null;
+// Stato persistente: {entries:[], deleted:[]} — deleted è l'elenco di ID cancellati (tombstone)
+function lPN(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(KV_KEY)||'{}');
+    if(Array.isArray(raw))return{entries:raw,deleted:[]};   // retrocompatibilità
+    return{entries:raw.entries||[],deleted:raw.deleted||[]};
+  }catch{return{entries:[],deleted:[]};}
+}
+const sPN=(ent,del)=>localStorage.setItem(KV_KEY,JSON.stringify({entries:ent,deleted:del}));
+let {entries,deleted}=lPN(),tipo='uscita',selCat=null,selSub=null,editId=null,detId=null;
 
-function mergeEntries(local,remote){
+function mergeAll(locEnt,locDel,remEnt,remDel){
+  // unione dei tombstone: un ID eliminato su qualsiasi device rimane eliminato
+  const delSet=new Set([...(locDel||[]),...(remDel||[])]);
+  // unione delle voci per ID (remote vince sui conflitti), poi rimuovi i cancellati
   const m=new Map();
-  (local||[]).forEach(e=>m.set(e.id,e));
-  (remote||[]).forEach(e=>m.set(e.id,e));
-  return Array.from(m.values()).sort((a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id));
+  (locEnt||[]).forEach(e=>m.set(e.id,e));
+  (remEnt||[]).forEach(e=>m.set(e.id,e));
+  delSet.forEach(id=>m.delete(id));
+  const ent=Array.from(m.values()).sort((a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id));
+  return{entries:ent,deleted:Array.from(delSet)};
 }
 async function kvLoad(){
   try{
     const r=await fetch(`${KV_BASE}/load?key=${KV_KEY}`);if(!r.ok)return;
-    let d;try{d=JSON.parse(await r.text())}catch{d=[];}
-    if(!Array.isArray(d))d=[];
-    const merged=mergeEntries(entries,d);
-    entries=merged;sPN(entries);
-    if(merged.length>d.length)await kvSave();
+    let d;try{d=JSON.parse(await r.text())}catch{d={};}
+    if(Array.isArray(d))d={entries:d,deleted:[]};          // retrocompatibilità
+    if(!d.entries)d={entries:[],deleted:[]};
+    const merged=mergeAll(entries,deleted,d.entries,d.deleted);
+    entries=merged.entries;deleted=merged.deleted;sPN(entries,deleted);
+    // push se locale aveva dati extra (nuove voci o tombstone) non presenti nel KV
+    if(entries.length!==d.entries.length||deleted.length!==d.deleted.length)await kvSave();
     setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));
   }catch{setSyncBar('⚠️ Offline — dati locali')}
 }
 async function kvSave(){
-  try{await fetch(`${KV_BASE}/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:KV_KEY,data:entries})});}catch{}
+  try{await fetch(`${KV_BASE}/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:KV_KEY,data:{entries,deleted}})});}catch{}
 }
 
 const fmt=n=>new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
@@ -164,7 +178,7 @@ function saveEntry(){
   const entry={id:editId||uid(),importo,data,forn,desc,tipo,cat:selCat,sub:selSub};
   if(editId){const i=entries.findIndex(e=>e.id===editId);if(i>=0)entries[i]=entry;else entries.push(entry);}
   else entries.push(entry);
-  sPN(entries);kvSave();showScr('screen-home');renderHome();
+  sPN(entries,deleted);kvSave();showScr('screen-home');renderHome();
 }
 
 function openDetail(id){
@@ -183,7 +197,9 @@ function closeDetail(){document.getElementById('detail-overlay').classList.remov
 function editFromDetail(){closeDetail();setTimeout(()=>openForm(detId),200);}
 function deleteEntry(){
   if(!confirm('Eliminare questa voce?'))return;
-  entries=entries.filter(e=>e.id!==detId);sPN(entries);kvSave();closeDetail();renderHome();
+  if(!deleted.includes(detId))deleted.push(detId);
+  entries=entries.filter(e=>e.id!==detId);
+  sPN(entries,deleted);kvSave();closeDetail();renderHome();
 }
 
 function renderDash(){
