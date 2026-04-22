@@ -295,7 +295,7 @@ function mergeEntries(local,remote){
   const m=new Map();
   (local||[]).forEach(e=>m.set(e.id,e));   // locale come base
   (remote||[]).forEach(e=>m.set(e.id,e));  // remote sovrascrive (ultimo scritto vince)
-  return Array.from(m.values()).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  return Array.from(m.values()).sort((a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id));
 }
 async function kvLoad(){
   try{
