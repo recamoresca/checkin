@@ -278,20 +278,23 @@ const S2C={'Joele':'Joele','Mauro':'Mauro','Livia':'Livia','Commissioni OTA/Stri
 const lPN=()=>{try{return JSON.parse(localStorage.getItem(KV_KEY)||'[]')}catch{return[]}};
 const sPN=d=>localStorage.setItem(KV_KEY,JSON.stringify(d));
 let entries=lPN(),tipo='uscita',selCat=null,selSub=null,editId=null,detId=null;
+function mergeEntries(local,remote){
+  // unione per ID: remote è la fonte di verità, locale aggiunge ciò che manca
+  const m=new Map();
+  (local||[]).forEach(e=>m.set(e.id,e));   // locale come base
+  (remote||[]).forEach(e=>m.set(e.id,e));  // remote sovrascrive (ultimo scritto vince)
+  return Array.from(m.values()).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+}
 async function kvLoad(){
   try{
     const r=await fetch(`${KV_BASE}/load?key=${KV_KEY}`);if(!r.ok)return;
     let d;try{d=JSON.parse(await r.text())}catch{d=[];}
     if(!Array.isArray(d))d=[];
-    if(d.length>=entries.length){
-      entries=d;sPN(entries);
-      setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));
-    } else {
-      // locale più ricco del cloud → push al KV
-      setSyncBar('⬆ Upload dati locali…');
-      await kvSave();
-      setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));
-    }
+    const merged=mergeEntries(entries,d);
+    entries=merged;sPN(entries);
+    // se il merge ha aggiunto voci locali che mancavano su KV, sincronizza
+    if(merged.length>d.length)await kvSave();
+    setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));
   }catch{setSyncBar('⚠️ Offline — dati locali')}
 }
 async function kvSave(){
@@ -308,7 +311,7 @@ const getCat=(t,id)=>(CATS[t]||[]).find(c=>c.id===id);
 const catIcon=(t,id)=>{const c=getCat(t,id);return c?c.icon:'📦';};
 const catName=(t,id)=>{const c=getCat(t,id);return c?c.name:id;};
 const setSyncBar=m=>document.getElementById('sync-bar').textContent=m;
-async function forcSync(){setSyncBar('⬆ Upload…');await kvSave();setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));renderHome();}
+async function forcSync(){setSyncBar('↻ Sincronizzazione…');await kvLoad();renderHome();}
 
 function showScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
