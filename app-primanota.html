@@ -230,11 +230,7 @@ body{font-family:'Raleway',sans-serif;background:var(--calce);color:var(--ink);f
     </div>
     <div class="field">
       <label>Categoria</label>
-      <div class="cat-grid" id="cat-grid"></div>
-    </div>
-    <div class="field" id="subcat-field" style="display:none">
-      <label id="subcat-lbl">Sottocategoria</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap" id="subcat-row"></div>
+      <div id="cat-grid"></div>
     </div>
     <div class="btn-grp" style="margin-top:8px">
       <button class="btn btn-olive" id="btn-save" onclick="saveEntry()">Salva voce</button>
@@ -397,25 +393,38 @@ function setTipo(t,skipReset){
 }
 
 function renderCats(){
-  const sc=tipo==='entrata'?'s-ent':'s-usc';
-  document.getElementById('cat-grid').innerHTML=(CATS[tipo]||[]).map(c=>
-    `<div class="cat-btn${c.id===selCat?' '+sc:''}" onclick="pickCat('${c.id}')">
-      <div class="ci">${c.icon}</div><div class="cn">${c.name}</div>
-    </div>`).join('');
-  renderSubs();
+  const cats=CATS[tipo]||[];
+  const isEnt=tipo==='entrata';
+  const selColor=isEnt?'var(--olive)':'var(--red)';
+  const selBg=isEnt?'var(--olive-lt)':'var(--red-lt)';
+  const calCls=isEnt?'ent':'usc';
+  // totali per categoria dalle voci esistenti
+  const totByCat={};
+  entries.forEach(e=>{if(e.tipo===tipo&&e.cat)totByCat[e.cat]=(totByCat[e.cat]||0)+e.importo;});
+  document.getElementById('cat-grid').innerHTML=cats.map(c=>{
+    const isSel=c.id===selCat;
+    const tot=totByCat[c.id]||0;
+    const subRow=isSel&&c.sub?`
+      <div class="bk-foot" style="flex-wrap:wrap;gap:6px;padding:8px 13px 10px">
+        ${c.sub.map(s=>{
+          const on=s===selSub;
+          return `<span class="season-pill" style="cursor:pointer;margin-bottom:2px;${on?`background:${selBg};border-color:${selColor};color:${selColor}`:''}" onclick="event.stopPropagation();pickSub('${s}')">${s}</span>`;
+        }).join('')}
+      </div>`:'' ;
+    return `<div class="bk" style="margin-bottom:8px;border:1.5px solid ${isSel?selColor:'var(--border)'};background:${isSel?selBg:'var(--white)'}" onclick="pickCat('${c.id}')">
+      <div class="bk-row">
+        <div class="bk-cal ${isSel?calCls:''}" style="font-size:22px">${c.icon}</div>
+        <div class="bk-inf">
+          <div class="bk-name" style="${isSel?`color:${selColor}`:''}">${c.name}</div>
+          <div class="bk-sub">${tot>0?'Stagione · € '+fmt(tot):'Nessuna voce'}</div>
+        </div>
+        <div style="font-size:20px;color:${isSel?selColor:'var(--border)'};">${isSel?'✓':'›'}</div>
+      </div>${subRow}
+    </div>`;
+  }).join('');
 }
 function pickCat(id){selCat=id;selSub=null;renderCats();}
-function renderSubs(){
-  const cat=selCat?getCat(tipo,selCat):null;
-  const sf=document.getElementById('subcat-field');
-  if(!cat||!cat.sub){sf.style.display='none';return;}
-  sf.style.display='block';
-  document.getElementById('subcat-lbl').textContent='Assegna a · '+cat.name;
-  document.getElementById('subcat-row').innerHTML=cat.sub.map(s=>
-    `<span class="season-pill" style="cursor:pointer;margin-bottom:4px;${s===selSub?'background:var(--olive-lt);border-color:var(--olive)':''}" onclick="pickSub('${s}')">${s}</span>`
-  ).join('');
-}
-function pickSub(s){selSub=s;renderSubs();}
+function pickSub(s){selSub=s;renderCats();}
 
 function saveEntry(){
   const importo=parseFloat(document.getElementById('f-imp').value);
