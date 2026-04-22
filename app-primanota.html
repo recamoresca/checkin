@@ -176,7 +176,10 @@ body{font-family:'Raleway',sans-serif;background:var(--calce);color:var(--ink);f
         <div id="bal-sal" style="font-size:14px;font-weight:700;color:var(--arch);margin-top:4px">€ 0,00</div>
       </div>
     </div>
-    <div id="sync-bar" style="text-align:center;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:4px">⏳ Caricamento…</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px">
+      <div id="sync-bar" style="font-size:10px;color:var(--muted);letter-spacing:.04em">⏳ Caricamento…</div>
+      <button onclick="forcSync()" style="font-size:9px;padding:2px 8px;border:1px solid var(--muted);border-radius:10px;background:none;color:var(--muted);cursor:pointer;letter-spacing:.04em">↻ Sync</button>
+    </div>
     <div id="entries-list"></div>
   </div>
 </div>
@@ -272,19 +275,29 @@ const CATS={
 };
 const CSV_COLS=['Data','Fornitore','Bene acquistato','Joele','Mauro','Livia','Incassi','Commissioni OTA - Stripe - Cedolare','Biancheria','Dotazioni ospiti','Decor e migliorie','Manutenzione','Diffusione e pubblicità online','Sito - Dominio - Channel Manager','Condominio','Giardino','Spiaggia','Utenze'];
 const S2C={'Joele':'Joele','Mauro':'Mauro','Livia':'Livia','Commissioni OTA/Stripe/Ced.':'Commissioni OTA - Stripe - Cedolare','Biancheria':'Biancheria','Dotazioni ospiti':'Dotazioni ospiti','Decor e migliorie':'Decor e migliorie','Manutenzione':'Manutenzione','Pubblicità online':'Diffusione e pubblicità online','Sito/Dominio/Channel Mgr':'Sito - Dominio - Channel Manager','Condominio':'Condominio','Giardino':'Giardino','Spiaggia':'Spiaggia','Utenze':'Utenze','Incassi':'Incassi'};
-let entries=[],tipo='uscita',selCat=null,selSub=null,editId=null,detId=null;
 const lPN=()=>{try{return JSON.parse(localStorage.getItem(KV_KEY)||'[]')}catch{return[]}};
 const sPN=d=>localStorage.setItem(KV_KEY,JSON.stringify(d));
+let entries=lPN(),tipo='uscita',selCat=null,selSub=null,editId=null,detId=null;
 async function kvLoad(){
   try{
     const r=await fetch(`${KV_BASE}/load?key=${KV_KEY}`);if(!r.ok)return;
     let d;try{d=JSON.parse(await r.text())}catch{d=[];}
-    if(Array.isArray(d)&&d.length>=entries.length){entries=d;sPN(entries);}
-    setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));
+    if(!Array.isArray(d))d=[];
+    if(d.length>=entries.length){
+      entries=d;sPN(entries);
+      setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));
+    } else {
+      // locale più ricco del cloud → push al KV
+      setSyncBar('⬆ Upload dati locali…');
+      await kvSave();
+      setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));
+    }
   }catch{setSyncBar('⚠️ Offline — dati locali')}
 }
 async function kvSave(){
-  try{await fetch(`${KV_BASE}/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:KV_KEY,data:entries})});}catch{}
+  try{
+    await fetch(`${KV_BASE}/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:KV_KEY,data:entries})});
+  }catch{}
 }
 const fmt=n=>new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 const MESI=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
@@ -295,6 +308,7 @@ const getCat=(t,id)=>(CATS[t]||[]).find(c=>c.id===id);
 const catIcon=(t,id)=>{const c=getCat(t,id);return c?c.icon:'📦';};
 const catName=(t,id)=>{const c=getCat(t,id);return c?c.name:id;};
 const setSyncBar=m=>document.getElementById('sync-bar').textContent=m;
+async function forcSync(){setSyncBar('⬆ Upload…');await kvSave();setSyncBar('✓ Sincronizzato · '+new Date().toLocaleTimeString('it'));renderHome();}
 
 function showScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
