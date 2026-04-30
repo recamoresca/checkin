@@ -1,0 +1,646 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Relais Casa Moresca · Guida Ospiti</title>
+<meta name="description" content="Guida per gli ospiti di Relais Casa Moresca, Porto Badino">
+<meta name="theme-color" content="#2C2118">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Casa Moresca">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --calce:#F7F3ED;
+  --calce2:#EDE8E0;
+  --calce3:#E0D9CF;
+  --sabbia:#C8BAA5;
+  --oliva:#6B7C5C;
+  --oliva-lt:#EBF0E6;
+  --oro:#B89650;
+  --oro-lt:#F5EDD8;
+  --marrone:#2C2118;
+  --marrone2:#4A3728;
+  --ink:#1A1A18;
+  --muted:#7A6E60;
+  --white:#FFFFFF;
+  --shadow:0 1px 12px rgba(44,33,24,.07);
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--calce)}
+body{font-family:'Raleway',sans-serif;color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+#install-bar{display:none;background:var(--marrone);padding:12px 16px;flex-direction:row;align-items:center;gap:10px;}
+#install-bar p{font-size:12px;color:rgba(255,255,255,.75);line-height:1.5;flex:1}
+#install-bar p strong{display:block;color:white;font-size:13px;margin-bottom:2px}
+.install-btn{background:var(--oro);color:white;border:none;border-radius:8px;padding:8px 14px;font-family:'Raleway',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;cursor:pointer;white-space:nowrap;}
+.install-close{background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;}
+
+.hero{
+  background:#FFFFFF;
+  padding:24px 24px 24px;
+  text-align:center;position:relative;
+}
+.hero::after{display:none}
+.hero-logo{width:360px;height:auto;display:block;margin:0 auto 16px;}
+.hero-divider{
+  width:40px;height:1px;
+  background:var(--sabbia);
+  margin:0 auto 12px;
+}
+.hero-tagline{display:none;}
+.hero-title{
+  font-family:'Raleway',sans-serif;
+  font-size:28px;font-weight:400;
+  color:var(--marrone);letter-spacing:.08em;line-height:1.2;
+  text-shadow:0 2px 12px rgba(44,33,24,.12), 0 1px 3px rgba(44,33,24,.08);
+}
+.hero-title em{display:none}
+.hero-sub{
+  font-size:9px;color:var(--muted);
+  margin-top:12px;letter-spacing:.22em;
+  text-shadow:0 1px 4px rgba(44,33,24,.08);
+}
+
+.lang-row{display:flex;justify-content:center;gap:6px;padding:18px 20px 4px;}
+.lang-btn{padding:6px 16px;border-radius:20px;font-family:'Raleway',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;cursor:pointer;transition:all .2s;border:1px solid var(--calce3);background:var(--white);color:var(--muted);}
+.lang-btn.active{background:var(--marrone);color:white;border-color:var(--marrone);}
+
+.sections{padding:6px 14px 90px}
+
+.card{background:var(--white);border-radius:var(--r);border:1px solid var(--calce3);margin-bottom:8px;box-shadow:0 1px 8px rgba(44,33,24,.05);overflow:hidden;}
+.card-hdr{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;user-select:none;}
+.card-icon{font-size:19px;flex-shrink:0;width:26px;text-align:center}
+.card-title{font-family:'Raleway',sans-serif;font-size:13px;font-weight:700;color:var(--marrone);letter-spacing:.06em;text-transform:uppercase;flex:1;}
+.chevron{color:var(--calce3);font-size:12px;transition:transform .25s;}
+.card.open .chevron{transform:rotate(180deg)}
+.card-body{display:none;padding:0 16px 16px;border-top:1px solid var(--calce2);}
+.card.open .card-body{display:block}
+
+.row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--calce2);}
+.row:last-child{border-bottom:none;padding-bottom:0}
+.row-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sabbia);flex-shrink:0;width:80px;padding-top:3px;line-height:1.4;}
+.row-val{font-size:13px;color:var(--ink);line-height:1.65;flex:1;}
+.row-val strong{font-weight:700;color:var(--marrone2)}
+.row-val a{color:var(--oliva);text-decoration:none;font-weight:600}
+
+.wifi-box{background:var(--calce);border-radius:10px;padding:14px;margin:12px 0;border:1px solid var(--calce3);}
+.wifi-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.wifi-row:last-child{margin-bottom:0}
+.wifi-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sabbia);min-width:60px;}
+.wifi-val{font-size:15px;font-weight:700;color:var(--marrone);letter-spacing:.04em;flex:1;}
+.copy-btn{background:var(--marrone);color:white;border:none;border-radius:7px;padding:7px 12px;font-family:'Raleway',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;cursor:pointer;flex-shrink:0;}
+.copy-btn:active{background:var(--marrone2)}
+
+.note{background:var(--oliva-lt);border-left:2px solid var(--oliva);border-radius:0 8px 8px 0;padding:10px 12px;margin:10px 0;font-size:12px;color:var(--muted);line-height:1.65;}
+.note-warn{background:var(--oro-lt);border-left:2px solid var(--oro);border-radius:0 8px 8px 0;padding:10px 12px;margin:10px 0;font-size:12px;color:var(--muted);line-height:1.65;}
+
+.emg{list-style:none;padding:0}
+.emg li{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--calce2);}
+.emg li:last-child{border-bottom:none;padding-bottom:0}
+.emg .en{font-size:13px;color:var(--ink);font-weight:500}
+.emg .en-num{color:var(--oliva);font-weight:700;font-size:14px;text-decoration:none;letter-spacing:.02em;}
+
+.map-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--marrone);color:white;border:none;border-radius:10px;padding:13px 16px;width:100%;font-family:'Raleway',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;margin-top:12px;}
+.map-btn:active{background:var(--marrone2)}
+
+.footer-bar{position:fixed;bottom:0;left:0;right:0;background:var(--marrone);padding:10px 16px;text-align:center;z-index:10;}
+.footer-bar p{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.3);}
+
+.toast{position:fixed;bottom:52px;left:50%;transform:translateX(-50%);background:var(--oliva);color:white;padding:10px 22px;border-radius:24px;font-family:'Raleway',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;z-index:999;animation:fadeup .25s ease;pointer-events:none;}
+@keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<div id="install-bar">
+  <p><strong>📱 Aggiungi alla schermata Home</strong>Accedi sempre alle info del tuo soggiorno</p>
+  <button class="install-btn" id="install-btn">Installa</button>
+  <button class="install-close" onclick="this.parentElement.style.display='none'">×</button>
+</div>
+
+<div class="hero">
+  <img class="hero-logo" src="https://static.wixstatic.com/media/cb1b98_b84204f1641846b8938a218cd263e9e2~mv2.png/v1/fill/w_341,h_82,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/banner%20grande%20400dpi.png" alt="Relais Casa Moresca">
+  <div class="hero-divider"></div>
+  <div class="hero-title" id="hero-title">Guida Ospiti</div>
+  <div class="hero-sub" id="hero-sub">Benvenuti · Welcome · Willkommen · Добро пожаловать</div>
+</div>
+
+<div class="lang-row">
+  <button class="lang-btn active" onclick="setLang('it')">🇮🇹 IT</button>
+  <button class="lang-btn" onclick="setLang('en')">🇬🇧 EN</button>
+  <button class="lang-btn" onclick="setLang('de')">🇩🇪 DE</button>
+  <button class="lang-btn" onclick="setLang('ru')">🇷🇺 RU</button>
+</div>
+
+<div class="sections">
+
+<div class="card open" id="s-meteo">
+  <div class="card-hdr" onclick="tog('s-meteo')">
+    <div class="card-icon">🌤</div>
+    <div class="card-title" data-it="Previsioni meteo" data-en="Weather forecast" data-de="Wettervorhersage" data-ru="Прогноз погоды">Previsioni meteo</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div id="meteo-content" style="padding-top:4px">
+      <div style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0">Caricamento...</div>
+    </div>
+  </div>
+</div>
+
+<div class="card open" id="s-wifi">
+  <div class="card-hdr" onclick="tog('s-wifi')">
+    <div class="card-icon">📶</div>
+    <div class="card-title" data-it="WiFi" data-en="WiFi" data-de="WiFi" data-ru="WiFi">WiFi</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sabbia);padding:12px 0 6px;" data-it="Interno (villa)" data-en="Indoor (villa)" data-de="Innen (Villa)" data-ru="Внутри (вилла)">Interno (villa)</div>
+    <div class="wifi-box">
+      <div class="wifi-row">
+        <span class="wifi-label" data-it="Rete" data-en="Network" data-de="Netzwerk" data-ru="Сеть">Rete</span>
+        <span class="wifi-val">Relais Casa Moresca WiFi</span>
+        <button class="copy-btn" onclick="cp('Relais Casa Moresca WiFi')" data-it="Copia" data-en="Copy" data-de="Kopieren" data-ru="Копировать">Copia</button>
+      </div>
+      <div class="wifi-row">
+        <span class="wifi-label">Password</span>
+        <span class="wifi-val">LAclippers</span>
+        <button class="copy-btn" onclick="cp('LAclippers')" data-it="Copia" data-en="Copy" data-de="Kopieren" data-ru="Копировать">Copia</button>
+      </div>
+    </div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sabbia);padding:14px 0 6px;" data-it="Giardino (esterno)" data-en="Garden (outdoor)" data-de="Garten (außen)" data-ru="Сад (улица)">Giardino (esterno)</div>
+    <div class="wifi-box">
+      <div class="wifi-row">
+        <span class="wifi-label" data-it="Rete" data-en="Network" data-de="Netzwerk" data-ru="Сеть">Rete</span>
+        <span class="wifi-val">Relais Casa Moresca Outdoor</span>
+        <button class="copy-btn" onclick="cp('Relais Casa Moresca Outdoor')" data-it="Copia" data-en="Copy" data-de="Kopieren" data-ru="Копировать">Copia</button>
+      </div>
+      <div class="wifi-row">
+        <span class="wifi-label">Password</span>
+        <span class="wifi-val">LAclippers</span>
+        <button class="copy-btn" onclick="cp('LAclippers')" data-it="Copia" data-en="Copy" data-de="Kopieren" data-ru="Копировать">Copia</button>
+      </div>
+    </div>
+    <div class="note" data-it="Connessione gratuita e illimitata in tutta la struttura." data-en="Free and unlimited connection throughout the villa." data-de="Kostenlose und unbegrenzte Verbindung im gesamten Anwesen." data-ru="Бесплатный безлимитный интернет по всей вилле.">Connessione gratuita e illimitata in tutta la struttura.</div>
+  </div>
+</div>
+
+<div class="card" id="s-checkout">
+  <div class="card-hdr" onclick="tog('s-checkout')">
+    <div class="card-icon">🗝️</div>
+    <div class="card-title" data-it="Check-out" data-en="Check-out" data-de="Check-out" data-ru="Выезд">Check-out</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="Orario" data-en="Time" data-de="Uhrzeit" data-ru="Время">Orario</div>
+      <div class="row-val"><strong data-it="Entro le ore 11:00" data-en="By 11:00 am" data-de="Bis 11:00 Uhr" data-ru="До 11:00">Entro le ore 11:00</strong></div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Chiavi" data-en="Keys" data-de="Schlüssel" data-ru="Ключи">Chiavi</div>
+      <div class="row-val" data-it="Lasciare le chiavi sul tavolo del salone." data-en="Leave the keys on the living room table." data-de="Schlüssel auf dem Wohnzimmertisch lassen." data-ru="Оставьте ключи на столе в гостиной.">Lasciare le chiavi sul tavolo del salone.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Rifiuti" data-en="Waste" data-de="Abfall" data-ru="Мусор">Rifiuti</div>
+      <div class="row-val" data-it="Chiudere bene i sacchi dell'immondizia e posizionarli vicino al cancello, all'interno della proprietà — non all'esterno." data-en="Tie the rubbish bags securely and place them near the gate, inside the property — not outside." data-de="Müllsäcke gut verschließen und nahe dem Tor innerhalb des Grundstücks platzieren — nicht außen." data-ru="Завяжите мешки с мусором и поставьте их у ворот, внутри территории — не снаружи.">Chiudere bene i sacchi e posizionarli vicino al cancello, all'interno della proprietà.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Late check-out" data-en="Late check-out" data-de="Später" data-ru="Поздний выезд">Late</div>
+      <div class="row-val" data-it="Disponibile su richiesta a tariffa conveniente secondo disponibilità." data-en="Available on request at a convenient rate, subject to availability." data-de="Auf Anfrage gegen Aufpreis, nach Verfügbarkeit." data-ru="По запросу за доплату, по наличию.">Disponibile su richiesta secondo disponibilità.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="s-beach">
+  <div class="card-hdr" onclick="tog('s-beach')">
+    <div class="card-icon">🏖️</div>
+    <div class="card-title" data-it="Spiaggia" data-en="Beach" data-de="Strand" data-ru="Пляж">Spiaggia</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="Distanza" data-en="Distance" data-de="Entfernung" data-ru="Расстояние">Distanza</div>
+      <div class="row-val" data-it="~300 metri a piedi · Accesso incluso nel soggiorno" data-en="~300 meters on foot · Beach access included in the stay" data-de="~300 Meter zu Fuß · Strandzugang inklusive" data-ru="~300 м пешком · Доступ включён в стоимость">~300 metri · Accesso incluso nel soggiorno</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Stabilimento" data-en="Beach club" data-de="Badeanstalt" data-ru="Пляжный клуб">Stabilimento</div>
+      <div class="row-val"><strong>Lido di Venere · da Giancarlo</strong><br><span data-it="Ombrellone + 2 sdraio + 2 lettini inclusi" data-en="Umbrella + 2 deck chairs + 2 sunbeds included" data-de="Sonnenschirm + 2 Liegestühle + 2 Sonnenliegen inklusive" data-ru="Зонт + 2 шезлонга + 2 лежака включены">Ombrellone + 2 sdraio + 2 lettini inclusi</span></div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Bar & Ristorante" data-en="Bar & Restaurant" data-de="Bar" data-ru="Бар и ресторан">Bar</div>
+      <div class="row-val" data-it="Bar aperto dalle 08:00 al tramonto · Ristorante 13:00–15:30" data-en="Bar open 08:00 to dusk · Restaurant 13:00–15:30" data-de="Bar 08:00 bis Sonnenuntergang · Restaurant 13:00–15:30" data-ru="Бар с 08:00 до заката · Ресторан 13:00–15:30">Bar 08:00 – tramonto · Ristorante 13:00–15:30</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Accesso" data-en="Access" data-de="Zugang" data-ru="Вход">Accesso</div>
+      <div class="row-val" data-it="Entrare dal gate di Viale Priamo. Lo stabilimento è sulla destra guardando il mare." data-en="Enter through the gate on Viale Priamo. Beach club on the right facing the sea." data-de="Eingang über das Tor am Viale Priamo. Strand rechts mit Blick aufs Meer." data-ru="Войти через ворота на Viale Priamo. Пляжный клуб справа лицом к морю.">Gate di Viale Priamo → destra guardando il mare</div>
+    </div>
+    <a class="map-btn" href="https://maps.google.com/?q=Lido+di+Venere+Porto+Badino" target="_blank">📍 <span data-it="Apri in Google Maps" data-en="Open in Google Maps" data-de="In Google Maps öffnen" data-ru="Открыть в Google Maps">Apri in Google Maps</span></a>
+  </div>
+</div>
+
+<div class="card" id="s-services">
+  <div class="card-hdr" onclick="tog('s-services')">
+    <div class="card-icon">✦</div>
+    <div class="card-title" data-it="Servizi inclusi" data-en="Included services" data-de="Enthaltene Leistungen" data-ru="Включённые услуги">Servizi inclusi</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="Incluso" data-en="Included" data-de="Inklusive" data-ru="Включено">Incluso</div>
+      <div class="row-val" data-it="Acqua · Luce · Aria condizionata · Internet · Prima pulizia · Servizio spiaggia" data-en="Water · Electricity · Air conditioning · Internet · First cleaning · Beach service" data-de="Wasser · Strom · Klimaanlage · Internet · Erste Reinigung · Strandservice" data-ru="Вода · Электричество · Кондиционер · Интернет · Первая уборка · Пляжный сервис">Acqua · Luce · Aria condizionata · Internet · Prima pulizia · Servizio spiaggia</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Biciclette" data-en="Bikes" data-de="Fahrräder" data-ru="Велосипеды">Biciclette</div>
+      <div class="row-val" data-it="2 biciclette gratuite. Ulteriori bici noleggiabili a prezzo contenuto." data-en="2 free bicycles. Additional bikes can be rented at a low price." data-de="2 kostenlose Fahrräder. Weitere günstig mietbar." data-ru="2 велосипеда бесплатно. Дополнительные велосипеды в аренду по низкой цене.">2 gratuite · Ulteriori noleggiabili</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Pulizie" data-en="Cleaning" data-de="Reinigung" data-ru="Уборка">Pulizie</div>
+      <div class="row-val" data-it="Settimanale gratuita per soggiorni ≥ 15 gg · Giornaliera a pagamento su richiesta" data-en="Free weekly cleaning for stays ≥ 15 days · Daily cleaning on request at extra cost" data-de="Kostenlose Wochenreinigung ≥ 15 Tage · Tägliche Reinigung auf Anfrage" data-ru="Еженедельная бесплатно при проживании ≥ 15 дней · Ежедневная за доплату по запросу">Settimanale gratuita (≥ 15 gg) · Giornaliera su richiesta</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="s-rules">
+  <div class="card-hdr" onclick="tog('s-rules')">
+    <div class="card-icon">📋</div>
+    <div class="card-title" data-it="Regole della casa" data-en="House rules" data-de="Hausregeln" data-ru="Правила дома">Regole della casa</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="Silenzio" data-en="Quiet hours" data-de="Ruhezeiten" data-ru="Тишина">Silenzio</div>
+      <div class="row-val"><strong>23:00 – 08:00</strong></div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Fumo" data-en="Smoking" data-de="Rauchen" data-ru="Курение">Fumo</div>
+      <div class="row-val" data-it="Vietato all'interno · Nessun mozzicone in giardino" data-en="Not allowed inside · No cigarette butts in the garden" data-de="Im Haus verboten · Keine Zigarettenstummel im Garten" data-ru="Запрещено внутри · Окурки в саду запрещены">Vietato all'interno · Nessun mozzicone in giardino</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Animali" data-en="Pets" data-de="Haustiere" data-ru="Животные">Animali</div>
+      <div class="row-val" data-it="Non ammessi." data-en="Not allowed." data-de="Nicht erlaubt." data-ru="Не допускаются.">Non ammessi</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Parcheggio" data-en="Parking" data-de="Parken" data-ru="Парковка">Parcheggio</div>
+      <div class="row-val" data-it="Parcheggio esterno in prossimità della villa. Vietato parcheggiare nel giardino del Relais." data-en="Outdoor parking near the villa. Do not park in the Relais garden." data-de="Außenparkplatz in der Nähe der Villa. Nicht im Garten parken." data-ru="Парковка снаружи рядом с виллой. Въезд в сад Релейса запрещён.">Parcheggio esterno in prossimità della villa · Vietato nel giardino</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Rifiuti" data-en="Waste" data-de="Abfall" data-ru="Мусор">Rifiuti</div>
+      <div class="row-val" data-it="È vietato accumulare rifiuti all'interno della struttura. Gli ospiti sono tenuti a rispettare il calendario della raccolta differenziata e a smaltire i rifiuti regolarmente durante il soggiorno." data-en="Accumulating waste inside the property is not allowed. Guests must follow the recycling calendar and dispose of waste regularly throughout their stay." data-de="Das Ansammeln von Abfällen innerhalb des Anwesens ist nicht gestattet. Die Gäste sind verpflichtet, den Mülltrennnungskalender einzuhalten und Abfälle regelmäßig zu entsorgen." data-ru="Накапливать мусор внутри виллы запрещено. Гости обязаны соблюдать календарь раздельного сбора мусора и регулярно выносить отходы в течение всего проживания.">Vietato accumulare rifiuti. Rispettare il calendario della raccolta differenziata durante tutto il soggiorno.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Acqua" data-en="Tap water" data-de="Leitungswasser" data-ru="Вода">Acqua</div>
+      <div class="row-val" data-it="Rubinetti interni: potabile · Fontanini in giardino: non potabile" data-en="Indoor taps: drinkable · Garden fountains: not drinkable" data-de="Innenrohre: trinkbar · Gartenbrunnen: nicht trinkbar" data-ru="Краны внутри: питьевая · Краны в саду: не питьевая">Rubinetti interni: potabile · Fontanini giardino: non potabile</div>
+    </div>
+    <div class="note-warn" data-it="⚠️ Irrigazione automatica ogni mattina presto. Non lasciare effetti personali in giardino la notte." data-en="⚠️ Automatic irrigation activates every morning. Do not leave belongings in the garden overnight." data-de="⚠️ Automatische Bewässerung jeden Morgen. Keine Gegenstände über Nacht im Garten." data-ru="⚠️ Автополив каждое утро. Не оставляйте вещи в саду на ночь.">⚠️ Irrigazione automatica ogni mattina. Non lasciare oggetti in giardino la notte.</div>
+  </div>
+</div>
+
+<div class="card" id="s-recycling">
+  <div class="card-hdr" onclick="tog('s-recycling')">
+    <div class="card-icon">♻️</div>
+    <div class="card-title" data-it="Raccolta differenziata" data-en="Recycling" data-de="Mülltrennung" data-ru="Раздельный сбор мусора">Raccolta differenziata</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="note-warn" data-it="⚠️ La raccolta differenziata è obbligatoria per legge. Il mancato rispetto è soggetto a sanzioni amministrative da parte del Comune." data-en="⚠️ Separate waste collection is required by law. Non-compliance is subject to administrative fines by the Municipality." data-de="⚠️ Die Mülltrennung ist gesetzlich vorgeschrieben. Verstöße können mit Bußgeldern der Gemeinde geahndet werden." data-ru="⚠️ Раздельный сбор мусора обязателен по закону. Несоблюдение влечёт административные санкции со стороны муниципалитета.">⚠️ La raccolta differenziata è obbligatoria per legge. Il mancato rispetto è soggetto a sanzioni amministrative.</div>
+    <div class="note" data-it="Mettere i sacchi fuori dal cancello la sera prima della raccolta." data-en="Leave bags outside the gate the evening before collection day." data-de="Taschen am Vorabend des Sammeltages vor das Tor stellen." data-ru="Вынесите мешки за ворота вечером накануне вывоза.">🗓 Mettere i sacchi fuori dal cancello la sera prima della raccolta</div>
+    <div class="row">
+      <div class="row-label" data-it="🟤 Organico" data-en="🟤 Organic" data-de="🟤 Bioabfall" data-ru="🟤 Органические отходы">🟤 Organico</div>
+      <div class="row-val" data-it="Bidone coperchio marrone · Lunedì, Mercoledì e Sabato" data-en="Brown bin · Monday, Wednesday and Saturday" data-de="Brauner Eimer · Mo, Mi und Sa" data-ru="Бак (коричневая крышка) · Пн, Ср, Сб">Bidone coperchio marrone · Lun, Mer, Sab</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="🔵 Carta e Cartone" data-en="🔵 Paper" data-de="🔵 Papier" data-ru="🔵 Бумага и картон">🔵 Carta</div>
+      <div class="row-val" data-it="Bidone coperchio blu · Venerdì" data-en="Blue bin · Friday" data-de="Blauer Eimer · Freitag" data-ru="Бак (синяя крышка) · Пятница">Bidone coperchio blu · Venerdì</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="🟡 Plastica e Metalli" data-en="🟡 Plastic & Metal" data-de="🟡 Plastik & Metall" data-ru="🟡 Пластик и металл">🟡 Plastica</div>
+      <div class="row-val" data-it="Bidone coperchio giallo · Giovedì (+ Domenica in luglio e agosto)" data-en="Yellow bin · Thursday (+ Sunday in July and August)" data-de="Gelber Eimer · Do (+ So im Juli/August)" data-ru="Бак (жёлтая крышка) · Чт (+ Вс в июле и августе)">Bidone coperchio giallo · Giovedì · +Domenica lug/ago</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="🟢 Vetro" data-en="🟢 Glass" data-de="🟢 Glas" data-ru="🟢 Стекло">🟢 Vetro</div>
+      <div class="row-val" data-it="Bidone coperchio verde · Ogni 15 giorni (vedi calendario)" data-en="Green bin · Every 15 days (see calendar)" data-de="Grüner Eimer · Alle 15 Tage (Kalender)" data-ru="Бак (зелёная крышка) · Каждые 15 дней">Bidone coperchio verde · Ogni 15 giorni</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="⚫ Secco residuo" data-en="⚫ Residual waste" data-de="⚫ Restmüll" data-ru="⚫ Смешанные отходы">⚫ Secco</div>
+      <div class="row-val" data-it="Bidone coperchio grigio · Martedì" data-en="Grey bin · Tuesday" data-de="Grauer Eimer · Dienstag" data-ru="Бак (серая крышка) · Вторник">Bidone coperchio grigio · Martedì</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="s-kitchen">
+  <div class="card-hdr" onclick="tog('s-kitchen')">
+    <div class="card-icon">🍳</div>
+    <div class="card-title" data-it="Cucina & Elettrodomestici" data-en="Kitchen & Appliances" data-de="Küche & Geräte" data-ru="Кухня и техника">Cucina & Elettrodomestici</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label">Espresso</div>
+      <div class="row-val" data-it="Riempire serbatoio posteriore → simbolo tazzina → inserire capsula e abbassare manico → premere il pulsante. Si spegne automaticamente." data-en="Fill rear tank → press cup symbol → insert capsule and lower handle → press button. Switches off automatically." data-de="Hintertank füllen → Tassensymbol → Kapsel einlegen und Griff senken → Taste drücken. Schaltet sich ab." data-ru="Наполнить задний резервуар → символ чашки → вставить капсулу → нажать кнопку. Выключается автоматически.">Riempire serbatoio → tazzina → capsula → pulsante. Si spegne automaticamente.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Lavastoviglie" data-en="Dishwasher" data-de="Geschirrspüler" data-ru="Посудомоечная машина">Lava&shy;stoviglie</div>
+      <div class="row-val">P1 75°C Intensivo · P2 60°C Universale · P3 45°C Eco · P4 Rapido · P5 Prelavaggio</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Piano induzione" data-en="Induction hob" data-de="Induktion" data-ru="Индукционная плита">Induzione</div>
+      <div class="row-val" data-it="Far riferimento alle istruzioni sulla placca del piano cottura. B = sblocca · A = accende/spegne · E = sceglie zona · C = livello potenza" data-en="Refer to the instructions on the hob panel. B = unlock · A = on/off · E = choose zone · C = power level" data-de="Anleitung auf der Herdplatte beachten. B = entsperren · A = ein/aus · E = Zone · C = Leistung" data-ru="См. инструкции на панели плиты. B = разблокировать · A = вкл/выкл · E = зона · C = мощность">Far riferimento alle istruzioni sulla placca del piano cottura. B sblocca · A accende · E zona · C potenza</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Lavatrice" data-en="Washing machine" data-de="Waschmaschine" data-ru="Стиральная машина">Lavatrice</div>
+      <div class="row-val" data-it="Usare esclusivamente il detergente fornito dalla struttura." data-en="Use only the detergent provided by the property." data-de="Nur das mitgelieferte Waschmittel verwenden." data-ru="Использовать только моющее средство, предоставленное виллой.">Solo il detergente in dotazione</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Microonde" data-en="Microwave" data-de="Mikrowelle" data-ru="Микроволновая печь">Microonde</div>
+      <div class="row-val" data-it="Premere MICROWAVE · Girare manopola per potenza P10–P100 · Premere START/+30SEC" data-en="Press MICROWAVE · Turn knob for power P10–P100 · Press START/+30SEC" data-de="MICROWAVE drücken · Knopf P10–P100 · START/+30SEC" data-ru="Нажать MICROWAVE · Повернуть ручку P10–P100 · Нажать START/+30SEC">MICROWAVE → manopola P10–P100 → START/+30SEC</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Ferro" data-en="Iron" data-de="Bügeleisen" data-ru="Утюг">Ferro</div>
+      <div class="row-val" data-it="Ferro a vapore e asse da stiro a disposizione." data-en="Steam iron and ironing board available." data-de="Dampfbügeleisen und Bügelbrett vorhanden." data-ru="Паровой утюг и гладильная доска в наличии.">Ferro a vapore + asse da stiro</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Asciugacapelli" data-en="Hair dryers" data-de="Föhne" data-ru="Фен">Asciuga&shy;capelli</div>
+      <div class="row-val" data-it="3 disponibili, uno per bagno." data-en="3 available, one per bathroom." data-de="3 vorhanden, einer pro Bad." data-ru="3 штуки, по одному на ванную.">3 disponibili, uno per bagno</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="s-rooms">
+  <div class="card-hdr" onclick="tog('s-rooms')">
+    <div class="card-icon">📺</div>
+    <div class="card-title" data-it="Camere & TV" data-en="Rooms & TV" data-de="Zimmer & TV" data-ru="Комнаты и ТВ">Camere & TV</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="Smart TV" data-en="Smart TV" data-de="Smart TV" data-ru="Smart TV">Smart TV</div>
+      <div class="row-val" data-it="Smart TV in salone con canali italiani e stranieri (decoder TIVUSAT Humax incluso). Puoi collegare il tuo account Netflix o Amazon Prime direttamente dalla TV." data-en="Smart TV in the living room with Italian and foreign channels (TIVUSAT Humax decoder included). You can log in to your personal Netflix or Amazon Prime account directly on the TV." data-de="Smart TV im Wohnzimmer mit italienischen und ausländischen Sendern. Netflix- oder Amazon-Prime-Konto direkt anmelden." data-ru="Smart TV в гостиной с итальянскими и зарубежными каналами (декодер TIVUSAT Humax включён). Можно войти в Netflix или Amazon Prime прямо с ТВ.">Smart TV in salone · Accedi al tuo account <strong>Netflix</strong> o <strong>Amazon Prime</strong> direttamente dalla TV</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Ventilatori" data-en="Ceiling fans" data-de="Ventilatoren" data-ru="Вентиляторы">Ventilatori</div>
+      <div class="row-val" data-it="A soffitto in ogni camera, con telecomando." data-en="Ceiling fans in each room, operated by remote control." data-de="Deckenventilatoren in jedem Zimmer, mit Fernbedienung." data-ru="Потолочные в каждой комнате, с пультом.">In ogni camera, con telecomando</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Aria condizionata" data-en="Air conditioning" data-de="Klimaanlage" data-ru="Кондиционирование">Aria condiz.</div>
+      <div class="row-val" data-it="Sistema AerVirdis: temperature confortevoli nel rispetto della normativa energetica (DPR 74/13). Non è possibile impostare temperature estreme." data-en="AerVirdis system: comfortable temperatures per Italian energy regulation DPR 74/13. Extreme temperatures cannot be set." data-de="AerVirdis-System: angenehme Temperaturen gemäß DPR 74/13. Extreme Temperaturen nicht einstellbar." data-ru="Система AerVirdis: комфортная температура согласно нормам DPR 74/13. Экстремальные значения недоступны.">Sistema AerVirdis — temperature confortevoli (norma DPR 74/13)</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Pronto soccorso" data-en="First aid" data-de="Erste Hilfe" data-ru="Аптечка">Pronto soccorso</div>
+      <div class="row-val" data-it="Kit nel bagno della camera Paulonia." data-en="First aid kit in the Paulonia room bathroom." data-de="Erste-Hilfe-Set im Paulonia-Badezimmer." data-ru="Аптечка в ванной комнаты Paulonia.">Nel bagno della camera Paulonia</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="s-garden">
+  <div class="card-hdr" onclick="tog('s-garden')">
+    <div class="card-icon">🌿</div>
+    <div class="card-title" data-it="Giardino & Esterno" data-en="Garden & Outdoor" data-de="Garten & Außen" data-ru="Сад и улица">Giardino & Esterno</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="Doccia esterna" data-en="Outdoor shower" data-de="Außendusche" data-ru="Душ на улице">Doccia esterna</div>
+      <div class="row-val" data-it="Acqua calda disponibile. Shampoo e detergenti solo all'interno della piattaforma." data-en="Hot water available. Use shampoos and detergents only within the shower platform." data-de="Warmes Wasser. Shampoos nur auf der Duschfläche verwenden." data-ru="Горячая вода есть. Шампунь и моющие средства — только в пределах душевой площадки.">Acqua calda · Shampoo solo nella piattaforma</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Illuminazione" data-en="Lighting" data-de="Beleuchtung" data-ru="Освещение">Illuminazione</div>
+      <div class="row-val" data-it="Il giardino è illuminato ovunque. Spegnere le luci quando non si è nel Relais." data-en="The garden is fully lit. Please switch off lights when not in the Relais." data-de="Der Garten ist überall beleuchtet. Licht ausschalten wenn abwesend." data-ru="Сад освещён повсюду. Выключайте свет, уходя из Релейса.">Illuminato ovunque · Spegnere le luci in assenza</div>
+    </div>
+    <div class="note-warn" data-it="⚠️ Irrigazione automatica ogni mattina presto. Non lasciare effetti personali in giardino la notte: potrebbero bagnarsi." data-en="⚠️ Automatic irrigation activates early every morning. Do not leave belongings in the garden overnight — they may get wet." data-de="⚠️ Automatische Bewässerung jeden Morgen früh. Keine Gegenstände über Nacht im Garten — könnten nass werden." data-ru="⚠️ Автополив каждое утро рано. Не оставляйте вещи в саду на ночь — они могут намокнуть.">⚠️ Irrigazione automatica ogni mattina. Non lasciare oggetti in giardino la notte.</div>
+  </div>
+</div>
+
+<div class="card" id="s-around">
+  <div class="card-hdr" onclick="tog('s-around')">
+    <div class="card-icon">🗺️</div>
+    <div class="card-title" data-it="Dintorni" data-en="Getting around" data-de="Umgebung" data-ru="Окрестности">Dintorni</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="Supermercato" data-en="Supermarket" data-de="Supermarkt" data-ru="Супермаркет">Supermercato</div>
+      <div class="row-val" data-it="Porto Badino: raggiungibile a piedi. Borgo Hermada: supermercati più grandi, pochi minuti in auto." data-en="Porto Badino: walkable. Borgo Hermada: larger supermarkets, a few minutes by car." data-de="Porto Badino: zu Fuß. Borgo Hermada: größere Supermärkte, wenige Minuten mit dem Auto." data-ru="Порто-Бадино: пешком. Борго-Эрмада: крупные супермаркеты, несколько минут на машине.">Porto Badino (a piedi) · Borgo Hermada (auto, pochi min.)</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Bar & Take Away" data-en="Bar & Take Away" data-de="Bar" data-ru="Бар и еда на вынос">Bar</div>
+      <div class="row-val" data-it='"Da Ambrogio" aperto tutti i giorni dalle 07:00 a notte fonda. Tabacchi, giornali, take away, pizzeria.' data-en='"Da Ambrogio" open daily from 07:00 to late night. Tobacco, newspapers, take away, pizzeria.' data-de='"Da Ambrogio" täglich ab 07:00 bis spät. Tabak, Zeitungen, Take-away, Pizzeria.'>"Da Ambrogio" · 07:00 – notte · Take away · Pizzeria</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Treni" data-en="Trains" data-de="Züge" data-ru="Поезда">Treni</div>
+      <div class="row-val">Priverno Fossanova (13 km) · Monte San Biagio (13 km)<br><a href="https://trenitalia.it" target="_blank">trenitalia.it</a></div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Traghetti" data-en="Ferries" data-de="Fähren" data-ru="Паромы">Traghetti</div>
+      <div class="row-val">Terracina / San Felice → Ponza<br><a href="https://www.laziomar.it" target="_blank">laziomar.it</a> · <a href="https://www.navlib.it" target="_blank">navlib.it</a></div>
+    </div>
+    <a class="map-btn" href="https://maps.google.com/?q=Via+Didone+9+Porto+Badino+Terracina" target="_blank">📍 <span data-it="Come arrivare al Relais" data-en="How to reach the Relais" data-de="Anfahrt zum Relais" data-ru="Как добраться до Релейса">Come arrivare al Relais</span></a>
+  </div>
+</div>
+
+
+<div class="card" id="s-restaurants">
+  <div class="card-hdr" onclick="tog('s-restaurants')">
+    <div class="card-icon">🍽️</div>
+    <div class="card-title" data-it="Ristoranti consigliati" data-en="Recommended restaurants" data-de="Empfohlene Restaurants" data-ru="Рекомендуемые рестораны">Ristoranti consigliati</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sabbia);padding:12px 0 6px;" data-it="San Felice Circeo (~15 min)" data-en="San Felice Circeo (~15 min)" data-de="San Felice Circeo (~15 Min.)" data-ru="Сан-Феличе-Чирчео (~15 мин)">San Felice Circeo (~15 min)</div>
+    <div class="row">
+      <div class="row-label">Osteria dei Cocci di Mare</div>
+      <div class="row-val" data-it="Cucina di mare tradizionale su una bella terrazza in viale Tittoni. Porzioni generose, carta dei vini curata. Ideale per una cena rilassata con vista." data-en="Traditional seafood on a lovely terrace on Viale Tittoni. Generous portions and a well-chosen wine list. Ideal for a relaxed dinner with a view." data-de="Traditionelle Meeresküche auf einer schönen Terrasse am Viale Tittoni. Großzügige Portionen, gute Weinkarte." data-ru="Традиционная морская кухня на красивой террасе на Viale Tittoni. Щедрые порции и хорошая карта вин.">Cucina di mare su terrazza in viale Tittoni · Porzioni generose · Ottima carta dei vini<br><a href="tel:+393925012937" style="font-size:12px;font-weight:700">📞 +39 392 501 2937</a></div>
+    </div>
+    <div class="row">
+      <div class="row-label">Barracuda</div>
+      <div class="row-val" data-it="Terrazza con vista diretta sul promontorio del Monte Circeo. Crudi di mare, battuto di gamberi e pesce freschissimo ogni giorno. Atmosfera informale e panorama eccezionale." data-en="Terrace with a direct view of Monte Circeo. Raw seafood, prawn tartare and daily fresh fish. Informal atmosphere and exceptional views." data-de="Terrasse mit Blick auf das Monte-Circeo-Vorgebirge. Meeresfrüchte roh, Garnelentatar und täglich frischer Fisch." data-ru="Терраса с видом на мыс Монте-Чирчео. Морепродукты в сыром виде, тартар из креветок и свежая рыба каждый день.">Terrazza sul Monte Circeo · Crudi di mare · Pesce freschissimo ogni giorno<br><a href="tel:+390773249883" style="font-size:12px;font-weight:700">📞 +39 0773 249883</a></div>
+    </div>
+    <div class="row">
+      <div class="row-label">La Scogliera</div>
+      <div class="row-val" data-it="Sul porto di San Felice, con vista sul mare e sul promontorio. Dal fritto misto dell'aperitivo fino ai secondi di pesce della cena, tutto è preparato con il pescato del giorno." data-en="On the harbour of San Felice, with views of the sea and the headland. From fried starters at aperitivo time to fish mains at dinner, everything is made with the day's catch." data-de="Am Hafen von San Felice, mit Blick auf Meer und Vorgebirge. Vom Frittomisto zum Aperitif bis zum Fischgericht beim Abendessen — alles frisch." data-ru="На набережной Сан-Феличе, с видом на море и мыс. От жареных закусок на аперитив до рыбных блюд на ужин — всё из улова дня.">Sul porto · Vista mare e promontorio · Pescato del giorno<br><a href="tel:+390773546684" style="font-size:12px;font-weight:700">📞 +39 0773 546684</a></div>
+    </div>
+    <div class="row">
+      <div class="row-label">Al Convento</div>
+      <div class="row-val" data-it="Trattoria a conduzione familiare nel centro storico medievale del borgo. Cucina di mare genuina, prezzi onesti e atmosfera autentica — lontano dal turismo di massa." data-en="Family-run trattoria in the medieval historic centre of the village. Genuine seafood cooking, honest prices and an authentic atmosphere away from mass tourism." data-de="Familienbetrieb in der mittelalterlichen Altstadt. Ehrliche Meeresküche, faire Preise, authentische Atmosphäre abseits des Massentourismus." data-ru="Семейная траттория в средневековом историческом центре деревни. Настоящая морская кухня, честные цены и аутентичная атмосфера вдали от массового туризма.">Trattoria familiare nel borgo medievale · Cucina di mare genuina · Prezzi onesti<br><a href="tel:+390773546167" style="font-size:12px;font-weight:700">📞 +39 0773 546167</a></div>
+    </div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sabbia);padding:14px 0 6px;" data-it="Terracina (~10 min)" data-en="Terracina (~10 min)" data-de="Terracina (~10 Min.)" data-ru="Террачина (~10 мин)">Terracina (~10 min)</div>
+    <div class="row">
+      <div class="row-label">Porto Salvo</div>
+      <div class="row-val" data-it="Uno dei ristoranti più apprezzati di Terracina, affacciato sul porto. Pesce fresco, pasta fatta in casa e una carta dei vini del territorio. Prenotazione consigliata." data-en="One of the most appreciated restaurants in Terracina, overlooking the harbour. Fresh fish, homemade pasta and a local wine selection. Booking recommended." data-de="Eines der beliebtesten Restaurants in Terracina, mit Blick auf den Hafen. Frischer Fisch, hausgemachte Pasta und lokale Weine. Reservierung empfohlen." data-ru="Один из лучших ресторанов Террачины с видом на порт. Свежая рыба, домашняя паста и местные вина. Рекомендуется бронирование.">Sul porto · Pesce fresco · Pasta fatta in casa · Prenotazione consigliata<br><a href="tel:+390773702151" style="font-size:12px;font-weight:700">📞 +39 0773 702151</a></div>
+    </div>
+    <div class="row">
+      <div class="row-label">La Bottega Sarra</div>
+      <div class="row-val" data-it="Locale moderno e accogliente con tavolini all'aperto. Ottimo per un aperitivo con vini naturali o per una cena leggera a base di pesce. Ambiente curato e informale." data-en="Modern and welcoming venue with outdoor tables. Great for natural wine aperitivo or a light fish dinner. Relaxed and stylish setting." data-de="Modernes, einladendes Lokal mit Außentischen. Ideal für Naturwein-Aperitivo oder ein leichtes Fischabendessen. Gepflegtes, ungezwungenes Ambiente." data-ru="Современное уютное заведение с уличными столиками. Отлично подходит для аперитива с натуральными винами или лёгкого рыбного ужина.">Locale moderno · Vini naturali · Aperitivo e cena di pesce<br><a href="tel:+390773702045" style="font-size:12px;font-weight:700">📞 +39 0773 702045</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- Contatti accoglienza -->
+<div class="card" id="s-contact">
+  <div class="card-hdr" onclick="tog('s-contact')">
+    <div class="card-icon">👤</div>
+    <div class="card-title" data-it="Il tuo referente" data-en="Your host contact" data-de="Ihr Ansprechpartner" data-ru="Ваш контакт">Il tuo referente</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="Nome" data-en="Name" data-de="Name" data-ru="Имя">Nome</div>
+      <div class="row-val"><strong>Joele Meneghello</strong></div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Telefono" data-en="Phone" data-de="Telefon" data-ru="Телефон">Telefono</div>
+      <div class="row-val" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <a href="tel:+393899650244">+39 389 965 0244</a>
+        <a href="https://wa.me/393899650244" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:#25D366;color:white;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;letter-spacing:.06em;text-decoration:none">💬 WhatsApp</a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="Disponibilità" data-en="Availability" data-de="Erreichbarkeit" data-ru="Доступность">Disponibilità</div>
+      <div class="row-val" data-it="Disponibile H24" data-en="Available 24/7" data-de="24/7 erreichbar" data-ru="Доступен круглосуточно">Disponibile H24</div>
+    </div>
+  </div>
+</div>
+<!-- Escursioni -->
+<div class="card" id="s-excursions">
+  <div class="card-hdr" onclick="tog('s-excursions')">
+    <div class="card-icon">🧭</div>
+    <div class="card-title" data-it="Escursioni & Dintorni" data-en="Excursions & Around" data-de="Ausflüge & Umgebung" data-ru="Экскурсии и окрестности">Escursioni & Dintorni</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="row-label" data-it="🚤 Gommone" data-en="🚤 Boat trips" data-de="🚤 Bootstouren" data-ru="🚤 Экскурсии на лодке">🚤 Gommone</div>
+      <div class="row-val" data-it="Offriamo escursioni in gommone verso le isole di Ponza e Palmarola e lungo la costa del Circeo. Giornate in mare con snorkeling e soste nelle calette — prenotabile tramite il vostro referente." data-en="We offer rubber dinghy excursions to the islands of Ponza and Palmarola and along the Circeo coast. A full day at sea with snorkelling and hidden coves — bookable through your host." data-de="Wir bieten Schlauchbootausflüge zu den Inseln Ponza und Palmarola sowie entlang der Circeo-Küste an. Ein Tag auf dem Meer mit Schnorcheln und versteckten Buchten — buchbar über Ihren Ansprechpartner." data-ru="Мы предлагаем экскурсии на лодке к островам Понца и Пальмарола, а также вдоль побережья Чирчео. Целый день на море со снорклингом и укромными бухтами — бронируется через вашего контакта.">Offriamo escursioni in gommone verso le isole di Ponza e Palmarola e lungo la costa del Circeo. Giornate in mare con snorkeling e soste nelle calette — prenotabile tramite il vostro referente.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="🏛 Terracina" data-en="🏛 Terracina" data-de="🏛 Terracina" data-ru="🏛 Террачина">🏛 Terracina</div>
+      <div class="row-val" data-it="Il Tempio di Giove Anxur domina la città dall'alto della Piana di Sant'Angelo: una terrazza panoramica sul golfo che vale da sola la visita. Il centro storico medievale e il porto offrono ristoranti, mercatino e passeggiata serale." data-en="The Temple of Jupiter Anxur overlooks the city from the Piana di Sant'Angelo: a panoramic terrace over the gulf worth the visit on its own. The medieval old town and harbour offer restaurants, a market and an evening promenade." data-de="Der Tempel des Jupiter Anxur thront über der Stadt auf der Piana di Sant'Angelo: Eine Panoramaterrasse über dem Golf, die allein schon den Besuch lohnt. Die mittelalterliche Altstadt und der Hafen bieten Restaurants und Abendspaziergang." data-ru="Храм Юпитера Анксура возвышается над городом с площадки Пьяна-ди-Сант'Анджело: панорамная терраса над заливом, ради которой стоит приехать. Средневековый центр и порт предлагают рестораны и вечернюю прогулку.">Il Tempio di Giove Anxur domina la città dall'alto della Piana di Sant'Angelo: una terrazza panoramica sul golfo che vale da sola la visita. Centro storico medievale, porto, ristoranti e passeggiata serale.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="🌿 Circeo" data-en="🌿 Circeo" data-de="🌿 Circeo" data-ru="🌿 Чирчео">🌿 Circeo</div>
+      <div class="row-val" data-it="Il Parco Nazionale del Circeo è a pochi chilometri: promontorio selvaggio, foresta costiera, lago di Sabaudia e sentieri panoramici. Ideale per escursioni a piedi, in bici o in kayak lungo la laguna." data-en="The Circeo National Park is just a few kilometres away: wild headland, coastal forest, Sabaudia lake and scenic trails. Ideal for hiking, cycling or kayaking along the lagoon." data-de="Der Nationalpark Circeo ist nur wenige Kilometer entfernt: wilder Vorgebirge, Küstenwald, Sabaudia-See und Panoramawege. Ideal zum Wandern, Radfahren oder Kajakfahren entlang der Lagune." data-ru="Национальный парк Чирчео в нескольких километрах: дикий мыс, прибрежный лес, озеро Сабаудиа и живописные тропы. Идеально для пеших прогулок, велопоездок или каякинга по лагуне.">Il Parco Nazionale del Circeo è a pochi chilometri: promontorio selvaggio, foresta costiera, lago di Sabaudia e sentieri panoramici. Ideale per escursioni a piedi, in bici o in kayak.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="🏖 Sperlonga & Gaeta" data-en="🏖 Sperlonga & Gaeta" data-de="🏖 Sperlonga & Gaeta" data-ru="🏖 Сперлонга и Гаэта">🏖 Sperlonga & Gaeta</div>
+      <div class="row-val" data-it="Sperlonga è uno dei borghi più belli d'Italia: viuzze bianche, grotta di Tiberio e spiagge premiate. Gaeta, a mezz'ora, stupisce con il suo castello aragonese, le grotte e la riviera con acque cristalline." data-en="Sperlonga is one of Italy's most beautiful villages: white alleys, the Grotto of Tiberius and award-winning beaches. Gaeta, half an hour away, impresses with its Aragonese castle, caves and crystal-clear riviera." data-de="Sperlonga ist eines der schönsten Dörfer Italiens: weiße Gassen, die Tiberiusgrotte und preisgekrönte Strände. Gaeta, eine halbe Stunde entfernt, beeindruckt mit seiner aragonesischen Burg und kristallklarer Riviera." data-ru="Сперлонга — одна из красивейших деревень Италии: белые переулки, грот Тиберия и отмеченные наградами пляжи. Гаэта в получасе езды — арагонский замок, гроты и кристально чистое море.">Sperlonga è uno dei borghi più belli d'Italia: viuzze bianche, grotta di Tiberio e spiagge premiate. Gaeta, a mezz'ora, stupisce con il suo castello aragonese e le acque cristalline.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="⛪ Casamari" data-en="⛪ Casamari" data-de="⛪ Casamari" data-ru="⛪ Казамари">⛪ Casamari</div>
+      <div class="row-val" data-it="L'Abbazia di Casamari, a circa un'ora di auto, è uno dei più grandi e meglio conservati esempi di architettura gotico-cistercense in Italia. I monaci producono ancora erbe medicinali, liquori e miele venduti nell'erboristeria abbaziale." data-en="Casamari Abbey, about an hour by car, is one of the finest examples of Gothic-Cistercian architecture in Italy. The monks still produce medicinal herbs, liqueurs and honey sold in the abbey shop." data-de="Die Abtei Casamari, etwa eine Autostunde entfernt, ist eines der besten Beispiele gotisch-zisterziensischer Architektur in Italien. Die Mönche produzieren noch heute Heilkräuter, Liköre und Honig." data-ru="Аббатство Казамари в часе езды — один из лучших образцов готической цистерцианской архитектуры в Италии. Монахи до сих пор производят лекарственные травы, ликёры и мёд, которые продаются в монастырской лавке.">L'Abbazia di Casamari, a circa un'ora, è uno dei migliori esempi di architettura gotico-cistercense in Italia. I monaci producono erbe medicinali, liquori e miele.</div>
+    </div>
+    <div class="row">
+      <div class="row-label" data-it="🦇 Grotte di Pastena" data-en="🦇 Pastena Caves" data-de="🦇 Höhlen von Pastena" data-ru="🦇 Пещеры Пастена">🦇 Grotte di Pastena</div>
+      <div class="row-val" data-it="A circa 40 minuti nell'entroterra ciociaro, le Grotte di Pastena sono tra le più spettacolari del Lazio: stalattiti, stalagmiti, laghi sotterranei e un percorso turistico che si snoda per oltre un chilometro tra sale e gallerie illuminate." data-en="About 40 minutes inland in the Ciociaria hills, the Pastena Caves are among the most spectacular in Lazio: stalactites, stalagmites, underground lakes and a tourist trail winding for over a kilometre through illuminated chambers and galleries." data-de="Etwa 40 Minuten landeinwärts in der Ciociaria, sind die Höhlen von Pastena unter den spektakulärsten im Latium: Stalaktiten, Stalagmiten, unterirdische Seen und ein Rundweg durch beleuchtete Säle." data-ru="Примерно в 40 минутах езды в предгорьях Чочарии пещеры Пастена — одни из самых впечатляющих в Лацио: сталактиты, сталагмиты, подземные озёра и туристический маршрут протяжённостью более километра.">A circa 40 minuti nell'entroterra, le Grotte di Pastena sono tra le più spettacolari del Lazio: stalattiti, stalagmiti, laghi sotterranei e un percorso di oltre un chilometro tra sale illuminate.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="s-emergency">
+  <div class="card-hdr" onclick="tog('s-emergency')">
+    <div class="card-icon">🚨</div>
+    <div class="card-title" data-it="Numeri utili & Emergenze" data-en="Useful numbers & Emergencies" data-de="Notrufnummern" data-ru="Полезные номера и экстренные службы">Numeri utili & Emergenze</div>
+    <div class="chevron">▾</div>
+  </div>
+  <div class="card-body">
+    <ul class="emg">
+      <li><span class="en" data-it="Ambulanza" data-en="Ambulance" data-de="Krankenwagen" data-ru="Скорая помощь">Ambulanza</span><a class="en-num" href="tel:118">118</a></li>
+      <li><span class="en" data-it="Polizia" data-en="Police" data-de="Polizei" data-ru="Полиция">Polizia</span><a class="en-num" href="tel:113">113</a></li>
+      <li><span class="en" data-it="Pompieri" data-en="Firefighters" data-de="Feuerwehr" data-ru="Пожарные">Pompieri</span><a class="en-num" href="tel:115">115</a></li>
+      <li><span class="en" data-it="Guardia Medica" data-en="Doctor on call" data-de="Notarzt" data-ru="Дежурный врач">Guardia Medica</span><a class="en-num" href="tel:+393347487940">+39 334 748 79 40</a></li>
+      <li><span class="en" data-it="Farmacia · Borgo Hermada" data-en="Pharmacy · Borgo Hermada" data-de="Apotheke · Borgo Hermada" data-ru="Аптека · Борго-Эрмада">Farmacia · Borgo Hermada</span><a class="en-num" href="tel:+390773742047">+39 0773 74 20 47</a></li>
+      <li><span class="en" data-it="Ospedale · Terracina" data-en="Hospital · Terracina" data-de="Krankenhaus · Terracina" data-ru="Больница · Террачина">Ospedale · Terracina</span><a class="en-num" href="tel:+390773708100">+39 0773 70 81</a></li>
+      <li><span class="en" data-it="Guardiano residence" data-en="Residence guard" data-de="Wächter" data-ru="Охрана резиденции">Guardiano residence</span><a class="en-num" href="tel:+393776709356">+39 377 670 93 56</a></li>
+      <li><span class="en">Relais Casa Moresca</span><a class="en-num" href="tel:+393791451623">+39 379 145 16 23</a></li>
+    </ul>
+    <div class="note" style="margin-top:12px" data-it="Videosorveglianza H24 nelle aree comuni. Nessuna telecamera all'interno. In caso di blackout: illuminazione di emergenza automatica." data-en="24h CCTV on common roads. No cameras inside the Relais. Power outage: automatic emergency lighting." data-de="24h Videoüberwachung auf Gemeinschaftswegen. Keine Kameras im Relais. Stromausfall: automatische Notbeleuchtung." data-ru="Видеонаблюдение 24 ч на общих территориях. Камер внутри нет. При отключении электричества: автоматическое аварийное освещение.">Videosorveglianza H24 nelle aree comuni · Nessuna telecamera all'interno · Blackout: illuminazione di emergenza automatica</div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer-bar"><p>bnbcasamoresca.com · +39 379 145 16 23</p></div>
+
+<style>
+.meteo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:4px}
+.meteo-day{background:var(--calce);border-radius:10px;padding:10px 6px;text-align:center;border:1px solid var(--calce3)}
+.meteo-dow{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sabbia);margin-bottom:4px}
+.meteo-ico{font-size:22px;margin:4px 0}
+.meteo-max{font-size:14px;font-weight:700;color:var(--marrone)}
+.meteo-min{font-size:11px;color:var(--muted);margin-top:1px}
+.meteo-prec{font-size:9px;color:var(--oliva);margin-top:3px}
+.meteo-loc{font-size:9px;color:var(--muted);text-align:center;margin-top:6px;letter-spacing:.08em}
+</style>
+<script>
+const WMO={0:'☀️',1:'🌤️',2:'⛅',3:'🌥️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'🌨️',80:'🌧️',81:'🌧️',82:'🌧️',95:'⛈️',96:'⛈️',99:'⛈️'};
+const DOW={it:['Dom','Lun','Mar','Mer','Gio','Ven','Sab'],en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],de:['So','Mo','Di','Mi','Do','Fr','Sa'],ru:['Вс','Пн','Вт','Ср','Чт','Пт','Сб']};
+let meteoData=null;
+async function loadMeteo(){
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=41.28&longitude=13.25&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&timezone=Europe/Rome&forecast_days=5');
+    const d=await r.json();
+    meteoData=d.daily;
+    renderMeteo(meteoData);
+  }catch(e){
+    document.getElementById('meteo-content').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:8px 0">Dati non disponibili</div>';
+  }
+}
+function renderMeteo(d){
+  if(!d)return;
+  const lang=currentLang||'it';
+  const days=DOW[lang]||DOW.it;
+  let html='<div class="meteo-grid">';
+  for(let i=0;i<5;i++){
+    const date=new Date(d.time[i]);
+    const dow=days[date.getDay()];
+    const ico=WMO[d.weathercode[i]]||'🌡️';
+    const max=Math.round(d.temperature_2m_max[i]);
+    const min=Math.round(d.temperature_2m_min[i]);
+    const prec=d.precipitation_sum[i];
+    html+=`<div class="meteo-day">
+      <div class="meteo-dow">${dow}</div>
+      <div class="meteo-ico">${ico}</div>
+      <div class="meteo-max">${max}°</div>
+      <div class="meteo-min">${min}°</div>
+      ${prec>0?`<div class="meteo-prec">💧${prec}mm</div>`:''}
+    </div>`;
+  }
+  html+='</div><div class="meteo-loc">Porto Badino · Terracina</div>';
+  document.getElementById('meteo-content').innerHTML=html;
+}
+loadMeteo();
+const L={
+  it:{title:'Guida Ospiti',sub:'Benvenuti · Welcome · Willkommen · Добро пожаловать'},
+  en:{title:'Guest Guide',sub:'Welcome · Benvenuti · Willkommen · Добро пожаловать'},
+  de:{title:'Gästeführer',sub:'Willkommen · Welcome · Benvenuti · Добро пожаловать'},
+  ru:{title:'Гид для гостей',sub:'Добро пожаловать · Welcome · Willkommen · Benvenuti'}
+};
+let currentLang='it';
+function setLang(l){
+  currentLang=l;
+  renderMeteo(meteoData);
+  document.querySelectorAll('.lang-btn').forEach((b,i)=>{b.classList.toggle('active',['it','en','de','ru'][i]===l)});
+  document.getElementById('hero-title').textContent=L[l]?L[l].title:'Guida Ospiti';
+  document.getElementById('hero-sub').textContent=L[l].sub;
+  document.querySelectorAll('[data-'+l+']').forEach(el=>{el.textContent=el.getAttribute('data-'+l)});
+}
+function tog(id){document.getElementById(id).classList.toggle('open')}
+function cp(txt){
+  navigator.clipboard?.writeText(txt).then(()=>{
+    const toastMsg={it:'✓ Copiato!',en:'✓ Copied!',de:'✓ Kopiert!',ru:'✓ Скопировано!'};
+    const t=document.createElement('div');t.className='toast';t.textContent=toastMsg[currentLang]||'✓ Copiato!';
+    document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+  });
+}
+let dp;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;document.getElementById('install-bar').style.display='flex';});
+document.getElementById('install-btn')?.addEventListener('click',async()=>{if(!dp)return;dp.prompt();await dp.userChoice;dp=null;document.getElementById('install-bar').style.display='none';});
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!navigator.standalone){
+  const b=document.getElementById('install-bar');b.style.display='flex';
+  b.querySelector('p').innerHTML='<strong>📱 Aggiungi alla schermata Home</strong>Tocca ⬆️ poi "Aggiungi a Home Screen"';
+  document.getElementById('install-btn').style.display='none';
+}
+</script>
+</body>
+</html>
