@@ -483,9 +483,16 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 </div>
 
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/checkin/sw.js', { scope: '/checkin/' });
-  }
+  // Auto-update: fetch version.txt with cache-busting timestamp
+  (async function checkForUpdate() {
+    try {
+      const r = await fetch('/checkin/version.txt?t=' + Date.now(), { cache: 'no-store' });
+      const v = (await r.text()).trim();
+      const prev = localStorage.getItem('cm_ver');
+      localStorage.setItem('cm_ver', v);
+      if (prev && prev !== v) location.reload(true);
+    } catch {}
+  })();
 
   let currentImageUrl = null;
   let selectedPhotos = []; // [{src, name}]
