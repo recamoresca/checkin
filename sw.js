@@ -1,11 +1,5 @@
-// Service Worker — network-first, always fresh
+// Self-unregistering service worker — rimuove se stesso e lascia passare tutto
 self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    fetch(e.request, { cache: 'no-store' })
-      .catch(() => caches.match(e.request))
-  );
+self.addEventListener('activate', e => {
+  e.waitUntil(self.registration.unregister());
 });
