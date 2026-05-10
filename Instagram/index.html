@@ -483,15 +483,17 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 </div>
 
 <script>
-  // Auto-update: fetch version.txt with cache-busting timestamp
-  (async function checkForUpdate() {
-    try {
-      const r = await fetch('/checkin/version.txt?t=' + Date.now(), { cache: 'no-store' });
-      const v = (await r.text()).trim();
-      const prev = localStorage.getItem('cm_ver');
-      localStorage.setItem('cm_ver', v);
-      if (prev && prev !== v) location.reload(true);
-    } catch {}
+  // Disinstalla service worker (causa problemi di cache)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+  }
+
+  // Forza versione nell'URL — ogni deploy cambia BUILD e il browser carica sempre la versione nuova
+  (function() {
+    var BUILD = '202605101740';
+    if (location.search.indexOf('v=' + BUILD) === -1) {
+      location.replace(location.pathname + '?v=' + BUILD);
+    }
   })();
 
   let currentImageUrl = null;
