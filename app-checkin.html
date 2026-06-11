@@ -1275,7 +1275,8 @@ function renderPren(){
           <div class="pren-row"><span>Telefono</span><strong>${p.tel||'—'}</strong></div>
           <div class="pren-row"><span>Email</span><strong style="font-size:12px">${p.email||'—'}</strong></div>
           <div class="pren-row"><span>Tassa soggiorno</span><strong style="${tassaColor}">${p.tassa==='da pagare'?'€ '+(p.importo||'—'):p.tassa||'—'}</strong></div>
-          ${p.extra?`<div class="pren-row"><span>Extra</span><strong>€ ${p.extra}</strong></div>`:''}
+          ${p.extra?`<div class="pren-row"><span>Extra</span><strong style="color:var(--red)">€ ${p.extra}</strong></div>`:''}
+          ${(p.tassa==='da pagare'&&p.importo&&p.extra)?`<div class="pren-row" style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px"><span>Totale da riscuotere</span><strong style="color:var(--red);font-weight:700">€ ${(parseFloat(p.importo)+parseFloat(p.extra)).toFixed(2)}</strong></div>`:''}
           ${p.note?`<div class="pren-row" style="background:var(--gold-lt);margin:6px -14px -12px;padding:8px 14px;border-radius:0 0 var(--r) var(--r)"><span>📝 Note</span><strong style="color:var(--arch)">${p.note}</strong></div>`:''}
         </div>
         <div style="display:flex;justify-content:flex-end;padding:6px 10px 10px">
