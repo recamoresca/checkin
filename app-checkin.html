@@ -1263,7 +1263,8 @@ function renderPren(){
     list.forEach(p=>{
       const n=nights(p.arrivo,p.partenza);
       const tassaColor=p.tassa==='da pagare'?'color:var(--red)':'color:var(--green)';
-      h+=`<div class="pren-card">
+      const isPast=p.partenza&&p.partenza<new Date().toISOString().slice(0,10);
+      h+=`<div class="pren-card" style="${isPast?'opacity:.38;filter:grayscale(.4)':''}">
         <div class="pren-card-hdr">
           <strong>${p.nome}</strong>
           <span>${fmtD(p.arrivo)} → ${fmtD(p.partenza)} · ${n} nott${n===1?'e':'i'}</span>
