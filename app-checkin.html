@@ -1489,6 +1489,17 @@ function renderDash(){
     }
   });
 
+  // Extra
+  let extraRealizzati = 0;
+  let extraPrevisti = 0;
+  pren.forEach(p => {
+    const imp = parseFloat(p.extra || 0);
+    if(imp > 0){
+      if(p.partenza <= today || dn[p.id]) extraRealizzati += imp;
+      extraPrevisti += imp;
+    }
+  });
+
   const fmt = n => n.toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2});
 
   const body = document.getElementById('dash-body');
@@ -1571,6 +1582,20 @@ function renderDash(){
         <div class="kpi-value" style="font-size:20px">€ ${fmt(tassePreviste)}</div>
       </div>
     </div>
+
+    <!-- Extra -->
+    ${extraPrevisti > 0 ? `
+    <div class="dash-section">Extra</div>
+    <div class="dash-kpi-grid">
+      <div class="kpi green">
+        <div class="kpi-label">Incassati ad oggi</div>
+        <div class="kpi-value" style="font-size:20px">€ ${fmt(extraRealizzati)}</div>
+      </div>
+      <div class="kpi gold">
+        <div class="kpi-label">Previsti a fine stagione</div>
+        <div class="kpi-value" style="font-size:20px">€ ${fmt(extraPrevisti)}</div>
+      </div>
+    </div>` : ''}
 
     <div style="height:20px"></div>
   `;
