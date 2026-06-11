@@ -1,0 +1,6 @@
+import os, http.server, socketserver
+os.chdir('/Users/pierpaolopresta/Desktop/app-relais')
+PORT = 8080
+with socketserver.TCPServer(("", PORT), http.server.SimpleHTTPRequestHandler) as httpd:
+    print(f"Serving at http://localhost:{PORT}")
+    httpd.serve_forever()
