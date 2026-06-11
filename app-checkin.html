@@ -1464,7 +1464,7 @@ function renderDash(){
 
   // Check-in stats
   const arriviTot = pren.length;
-  const arriviAcColti = pren.filter(p => dn[p.id]).length;
+  const arriviAcColti = pren.filter(p => dn[p.id] || (p.partenza && p.partenza < today)).length;
   const arriviDaAccogliere = arriviTot - arriviAcColti;
 
   // Revenue - realized (past bookings + checked in)
