@@ -476,6 +476,9 @@ function showSection(t){ if(window._appReady) window._showSection(t); else setTi
         <label>Importo tassa (€)</label>
         <input type="number" id="pimporto" placeholder="es. 14.00" step="0.50" min="0">
       </div>
+      <div class="field"><label>Extra (€)</label>
+        <input type="number" id="pextra" placeholder="es. 50.00" step="5" min="0">
+      </div>
       <div class="field"><label>Nazionalità ospiti</label><input type="text" id="pnaz" placeholder="es. Italiana, Tedesca…" autocomplete="off"></div>
       <div class="field"><label>Note operative</label><input type="text" id="pnote" placeholder="es. letto aggiunto, allergie…"></div>
       <div class="btn-grp">
@@ -1272,6 +1275,7 @@ function renderPren(){
           <div class="pren-row"><span>Telefono</span><strong>${p.tel||'—'}</strong></div>
           <div class="pren-row"><span>Email</span><strong style="font-size:12px">${p.email||'—'}</strong></div>
           <div class="pren-row"><span>Tassa soggiorno</span><strong style="${tassaColor}">${p.tassa==='da pagare'?'€ '+(p.importo||'—'):p.tassa||'—'}</strong></div>
+          ${p.extra?`<div class="pren-row"><span>Extra</span><strong>€ ${p.extra}</strong></div>`:''}
           ${p.note?`<div class="pren-row" style="background:var(--gold-lt);margin:6px -14px -12px;padding:8px 14px;border-radius:0 0 var(--r) var(--r)"><span>📝 Note</span><strong style="color:var(--arch)">${p.note}</strong></div>`:''}
         </div>
         <div style="display:flex;justify-content:flex-end;padding:6px 10px 10px">
@@ -1288,7 +1292,7 @@ function renderPren(){
 function openAddPren(){
   document.getElementById('modal-pren-ttl').textContent='Nuova prenotazione';
   document.getElementById('peid').value='';
-  ['pn','ptel','pemail','pnote','pimporto','pnaz','psoggiorno'].forEach(id=>document.getElementById(id).value='');
+  ['pn','ptel','pemail','pnote','pimporto','pnaz','psoggiorno','pextra'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('po').value='';
   document.getElementById('ptassa').value='';
   document.getElementById('ph').value='';
@@ -1323,6 +1327,7 @@ function editPren(id){
   document.getElementById('psoggiorno').value=p.importoSoggiorno||'';
   document.getElementById('ptassa').value=p.tassa||'';
   document.getElementById('pimporto').value=p.importo||'';
+  document.getElementById('pextra').value=p.extra||'';
   document.getElementById('pnaz').value=p.naz||'';
   document.getElementById('pnote').value=p.note||'';
   document.getElementById('ptassa-importo-wrap').style.display=p.tassa==='da pagare'?'block':'none';
@@ -1352,6 +1357,7 @@ async function savePren(){
     importoSoggiorno:document.getElementById('psoggiorno').value,
     tassa:document.getElementById('ptassa').value,
     importo:document.getElementById('pimporto').value,
+    extra:document.getElementById('pextra').value,
     naz:document.getElementById('pnaz').value.trim(),
     note:document.getElementById('pnote').value.trim(),
   };
