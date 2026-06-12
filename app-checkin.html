@@ -867,9 +867,9 @@ function s4(){
       </div>
     </div>
     <div class="sec">
-      <div class="sec-ttl"><div><span class="sec-eyebrow">Destinatario</span>Invia a Paolo P.</div></div>
-      <div class="field"><label>Email *</label><input type="email" id="eml" placeholder="paolo@bnbcasamoresca.com"></div>
-      <div class="warn">Inserisci la tua email per ricevere i dati pronti per Octorate.</div>
+      <div class="sec-ttl"><div><span class="sec-eyebrow">Invio automatico</span>Destinatari</div></div>
+      <div class="pren-row"><span>Dati documenti</span><strong>pierpaolo.presta@gmail.com</strong></div>
+      ${ci.bk.email?`<div class="pren-row"><span>Contratto ospite</span><strong style="font-size:12px">${ci.bk.email}</strong></div>`:`<div class="pren-row"><span>Contratto ospite</span><strong style="color:var(--muted)">— nessuna email in prenotazione</strong></div>`}
     </div>`;
   document.getElementById('ci-bar').innerHTML=`
     <button class="back-btn" onclick="nx(2)">←</button>
@@ -1089,23 +1089,53 @@ function blankCv(c){return!c.getContext('2d').getImageData(0,0,c.width,c.height)
 
 // ── SEND ─────────────────────────────────────────────
 async function send(){
-  const email=document.getElementById('eml')?.value.trim();
-  if(!email||!email.includes('@')){alert('Inserisci un indirizzo email valido.');return}
   showLdr('Invio dati in corso…');
   const b=ci.bk,n=nights(b.arrivo,b.partenza),txt=buildTxt(n);
   try{
+    // Dati documenti → sempre a Pierpaolo
     await emailjs.send('service_tsjwj0q','template_yp4iy4r',{
-      to_email: email,
+      to_email: 'pierpaolo.presta@gmail.com',
       nome_ospite: b.nome,
       messaggio: txt,
     });
+    // Contratto → email ospite (se presente in prenotazione)
+    if(b.email){
+      await emailjs.send('service_tsjwj0q','template_yp4iy4r',{
+        to_email: b.email,
+        nome_ospite: b.nome,
+        messaggio: buildGuestTxt(n),
+      });
+    }
     await mDN(b.id);hideLdr();
-    document.getElementById('ok-msg').innerHTML=`Dati di <strong>${b.nome}</strong> inviati a ${email}.<br>Pronti per l'inserimento in Octorate.`;
+    document.getElementById('ok-msg').innerHTML=`Check-in di <strong>${b.nome}</strong> completato.<br>Dati inviati a pierpaolo.presta@gmail.com${b.email?' e contratto a '+b.email:''}.`;
     showScr('screen-ok');renderHome();
   }catch(e){
     hideLdr();
     alert('Errore invio email: '+(e.text||JSON.stringify(e)));
   }
+}
+
+function buildGuestTxt(n){
+  const b=ci.bk;
+  const sep='─'.repeat(38);
+  return `Gentile ${b.nome},
+
+grazie per aver completato il check-in al Relais Casa Moresca.
+
+${sep}
+RIEPILOGO SOGGIORNO
+${sep}
+Arrivo:    ${fmtD(b.arrivo)}
+Partenza:  ${fmtD(b.partenza)}
+Notti:     ${n}
+Ospiti:    ${b.num}${b.note?'\nNote:      '+b.note:''}
+${sep}
+
+Ha preso visione e firmato il contratto di locazione turistica e l'informativa sulla privacy.
+
+Per qualsiasi necessità: info@bnbcasamoresca.com
+
+Relais Casa Moresca · Via Didone 9 · Porto Badino (LT)`;
 }
 
 
